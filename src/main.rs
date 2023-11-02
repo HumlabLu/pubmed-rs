@@ -115,10 +115,11 @@ fn main() -> Result<(), quick_xml::Error> {
 
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
-        println!("Name: {}", path.unwrap().path().display())
+        println!("--------Name: {}", path.as_ref().unwrap().path().display());
+        xmlrs(path.unwrap().path().display().to_string());
     }
 
-    xmlrs();
+    //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000161.xml"));
 
     Ok(())
 }
@@ -127,8 +128,8 @@ fn main() -> Result<(), quick_xml::Error> {
 // xml-rs code example
 // ================================================================
 
-fn xmlrs() {
-    let file_path = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000166.xml");
+fn xmlrs(file_path: String) {
+    //let file_path = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000166.xml");
     /*let file_path = std::env::args_os()
     .nth(1)
     .expect("Please specify a path to an XML file");*/
@@ -182,7 +183,7 @@ fn xmlrs() {
                                             XmlEvent::Characters(data) => {
                                                 println!(r#"{}"#, data.escape_debug())
                                             },
-                                            _ => todo!(),
+                                            _ => {},//todo!(), // Ignore the other XmlEvents.
                                         }
                                     },// Ok
                                     Err(e) => {
@@ -191,8 +192,8 @@ fn xmlrs() {
                                     },
                                 } //match maybe_title
                             } // local_name
-                        }
-                    }
+                        } // else
+                    } // StartElement
                     XmlEvent::EndElement { name } => {
                         ////println!("EndElement({name})")
                     }
