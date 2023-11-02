@@ -2,12 +2,20 @@ use entrez_rs::errors::Error;
 use entrez_rs::eutils::{EFetch, ESearch, Eutils, DB};
 use entrez_rs::parser::esearch::ESearchResult;
 use entrez_rs::parser::pubmed::PubmedArticleSet;
+
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::QName;
 
+use std::fs::File;
+use std::io::BufReader;
+use xml::common::Position;
+use xml::reader::{ParserConfig, XmlEvent};
+
+use std::fs;
+
 fn entrez() -> Result<(), Error> {
     let xml = ESearch::new(DB::Pubmed, "cell death").run()?;
-
+    
     let parsed = ESearchResult::read(&xml);
 
     println!("{:#?}", &parsed?.id_list.ids);
@@ -105,6 +113,11 @@ fn main() -> Result<(), quick_xml::Error> {
     //Ok(())
     //entrez();
 
+    let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
+    for path in paths {
+        println!("Name: {}", path.unwrap().path().display())
+    }
+
     xmlrs();
 
     Ok(())
@@ -113,11 +126,6 @@ fn main() -> Result<(), quick_xml::Error> {
 // ================================================================
 // xml-rs code example
 // ================================================================
-
-use std::fs::File;
-use std::io::BufReader;
-use xml::common::Position;
-use xml::reader::{ParserConfig, XmlEvent};
 
 fn xmlrs() {
     let file_path = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000166.xml");
@@ -133,7 +141,7 @@ fn xmlrs() {
     loop {
         match reader.next() {
             Ok(e) => {
-                print!("{}\t", reader.position());
+                //print!("{}\t", reader.position());
 
                 match e {
                     XmlEvent::StartDocument {
@@ -155,27 +163,31 @@ fn xmlrs() {
                         name, attributes, ..
                     } => {
                         if attributes.is_empty() {
-                            println!("StartElement({name})")
+                            ////println!("StartElement({name})")
                         } else {
                             let attrs: Vec<_> = attributes
                                 .iter()
                                 .map(|a| format!("{}={:?}", &a.name, a.value))
                                 .collect();
                             ////println!("StartElement({name} [{}])", attrs.join(", "))
+                            if name.local_name == "sec" {
+                                println!("StartElement({name} [{}])", attrs.join(", "));
+                                println!("{:?}", reader.next())
+                            }
                         }
                     }
                     XmlEvent::EndElement { name } => {
-                        println!("EndElement({name})")
+                        ////println!("EndElement({name})")
                     }
                     XmlEvent::Comment(data) => {
                         ////println!(r#"Comment("{}")"#, data.escape_debug())
                     }
                     XmlEvent::CData(data) => println!(r#"CData("{}")"#, data.escape_debug()),
                     XmlEvent::Characters(data) => {
-                        println!(r#"Characters("{}")"#, data.escape_debug())
+                        ////println!(r#"Characters("{}")"#, data.escape_debug())
                     }
                     XmlEvent::Whitespace(data) => {
-                        println!(r#"Whitespace("{}")"#, data.escape_debug())
+                        ////println!(r#"Whitespace("{}")"#, data.escape_debug())
                     }
                 }
             }
