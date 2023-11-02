@@ -24,7 +24,7 @@ fn entrez() -> Result<(), Error> {
 fn main() -> Result<(), quick_xml::Error> {
     use quick_xml::events::Event;
     use quick_xml::reader::Reader;
-
+    
     let mut reader = Reader::from_file("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000066.xml")?;
     reader.trim_text(true);
 
@@ -70,33 +70,119 @@ fn main() -> Result<(), quick_xml::Error> {
                 ),
                 b"title" => {
                     count += 1;
-                    println!("{:?}", e);
-                    let mut element_buf = Vec::new();
-                    let event = reader.read_event_into(&mut element_buf)?;
-                    println!("an event {:?}", event);
-                    if let Event::Start(ref e) = event {
-                        let name = e.name();
-                        let mut tmp_buf = Vec::new();
-                        let text_content = reader.read_to_end_into(e.name(), &mut tmp_buf).unwrap();
-                        println!("{:?}", text_content);
-                    } else {
-                        let event_string = format!("{:?}", event);
-                        break; //Err(quick_xml::Error::UnexpectedToken(event_string))
-                    }
+                    /*
+                            println!("{:?}", e);
+                            let mut element_buf = Vec::new();
+                            let event = reader.read_event_into(&mut element_buf)?;
+                            println!("an event {:?}", event);
+                            if let Event::Start(ref e) = event {
+                                let name = e.name();
+                                let mut tmp_buf = Vec::new();
+                                let text_content = reader.read_to_end_into(e.name(), &mut tmp_buf).unwrap();
+                                println!("{:?}", text_content);
+                            } else {
+                                let event_string = format!("{:?}", event);
+                                break; //Err(quick_xml::Error::UnexpectedToken(event_string))
+                        }
+                    */
                 }
                 _ => (),
             },
-            Ok(Event::Text(e)) => txt.push(e.unescape().unwrap().into_owned()),
+            Ok(Event::Text(e)) => {
+                //println!("{}", e.unescape().unwrap());
+                txt.push(e.unescape().unwrap().into_owned());
+            }
 
             // There are several other `Event`s we do not consider here
             _ => (),
         }
-        println!("{:?}", txt);
         // if we don't keep a borrow elsewhere, we can clear the buffer to keep memory usage low
         buf.clear();
     }
     println!("read {} count", count);
+    println!("{:?}", txt);
+
+    //Ok(())
+    //entrez();
+
+    xmlrs();
 
     Ok(())
-    //entrez();
+}
+
+// ================================================================
+// xml-rs code example
+// ================================================================
+
+use std::fs::File;
+use std::io::BufReader;
+use xml::common::Position;
+use xml::reader::{ParserConfig, XmlEvent};
+
+fn xmlrs() {
+    let file_path = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000166.xml");
+    /*let file_path = std::env::args_os()
+    .nth(1)
+    .expect("Please specify a path to an XML file");*/
+    let file = File::open(file_path).unwrap();
+
+    let mut reader = ParserConfig::default()
+        .ignore_root_level_whitespace(false)
+        .create_reader(BufReader::new(file));
+
+    loop {
+        match reader.next() {
+            Ok(e) => {
+                print!("{}\t", reader.position());
+
+                match e {
+                    XmlEvent::StartDocument {
+                        version, encoding, ..
+                    } => {
+                        println!("StartDocument({version}, {encoding})")
+                    }
+                    XmlEvent::EndDocument => {
+                        println!("EndDocument");
+                        break;
+                    }
+                    XmlEvent::ProcessingInstruction { name, data } => {
+                        println!(
+                            "ProcessingInstruction({name}={:?})",
+                            data.as_deref().unwrap_or_default()
+                        )
+                    }
+                    XmlEvent::StartElement {
+                        name, attributes, ..
+                    } => {
+                        if attributes.is_empty() {
+                            println!("StartElement({name})")
+                        } else {
+                            let attrs: Vec<_> = attributes
+                                .iter()
+                                .map(|a| format!("{}={:?}", &a.name, a.value))
+                                .collect();
+                            ////println!("StartElement({name} [{}])", attrs.join(", "))
+                        }
+                    }
+                    XmlEvent::EndElement { name } => {
+                        println!("EndElement({name})")
+                    }
+                    XmlEvent::Comment(data) => {
+                        ////println!(r#"Comment("{}")"#, data.escape_debug())
+                    }
+                    XmlEvent::CData(data) => println!(r#"CData("{}")"#, data.escape_debug()),
+                    XmlEvent::Characters(data) => {
+                        println!(r#"Characters("{}")"#, data.escape_debug())
+                    }
+                    XmlEvent::Whitespace(data) => {
+                        println!(r#"Whitespace("{}")"#, data.escape_debug())
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("Error at {}: {e}", reader.position());
+                break;
+            }
+        }
+    }
 }
