@@ -137,9 +137,9 @@ fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReade
                 match e {
                     XmlEvent::EndElement { name } => {
                         //println!("EndElement({name})")
-                        if name.local_name == "title-group" {
+                        if name.local_name == tag {
                             // End the loop we started above.
-                            println!("Ending title-group.");
+                            println!("Ending {tag}.");
                             break;
                         }
                     },
