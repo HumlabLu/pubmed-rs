@@ -139,18 +139,22 @@ fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReade
                         //println!("EndElement({name})")
                         if name.local_name == tag {
                             // End the loop we started above.
-                            println!("Ending {tag}.");
-                            break;
+                            //println!("Ending {tag}.");
+                            //return reader //break; // break continues... should we?
+                            //break; // ignore this, end when start element is something else
                         }
                     },
                     XmlEvent::StartElement {
                         name, attributes, ..
                     } => {
                         println!("In loop with {name}.");
-                        if name.local_name == "article-title" {
+                        if name.local_name == tag {
                             println!("We have it!");
                             // does reader.next() always give us the
                             // title text?
+                        } else {
+                            println!("Different tag... ending.");
+                            return reader
                         }
                     },
                     XmlEvent::EndDocument => { // this could happen?
@@ -158,7 +162,7 @@ fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReade
                         break;
                     },
                     XmlEvent::Characters(data) => {
-                        println!(r#"loop a-t {}"#, data.escape_debug())
+                        println!(r#"loop a-t {}"#, data.escape_debug()) // Return/save this also?
                     },
                     _ => {println!("waiting")},
                 } // match e
@@ -232,6 +236,9 @@ fn xmlrs(file_path: String) {
                                     },
                                 } //Match maybe_title
                             } // arcticle-title
+                            if name.local_name == "article-meta" {
+                                reader = loop_until(reader, "article-id");                                
+                            }
                         } else {
                             let attrs: Vec<_> = attributes
                                 .iter()
