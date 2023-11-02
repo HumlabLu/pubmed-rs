@@ -172,8 +172,25 @@ fn xmlrs() {
                             ////println!("StartElement({name} [{}])", attrs.join(", "))
                             if name.local_name == "sec" {
                                 println!("StartElement({name} [{}])", attrs.join(", "));
-                                println!("{:?}", reader.next())
-                            }
+                                let maybe_title = reader.next().unwrap();
+                                //println!("{:?}", maybe_title);
+                                let maybe_title = reader.next();
+                                //XmlEvent::Characters(data) => {
+                                match maybe_title {
+                                    Ok(e) => {
+                                        match e {
+                                            XmlEvent::Characters(data) => {
+                                                println!(r#"{}"#, data.escape_debug())
+                                            },
+                                            _ => todo!(),
+                                        }
+                                    },// Ok
+                                    Err(e) => {
+                                        eprintln!("Error at {}: {e}", reader.position());
+                                        break;
+                                    },
+                                } //match maybe_title
+                            } // local_name
                         }
                     }
                     XmlEvent::EndElement { name } => {
@@ -184,7 +201,7 @@ fn xmlrs() {
                     }
                     XmlEvent::CData(data) => println!(r#"CData("{}")"#, data.escape_debug()),
                     XmlEvent::Characters(data) => {
-                        ////println!(r#"Characters("{}")"#, data.escape_debug())
+                        ////Println!(r#"Characters("{}")"#, data.escape_debug())
                     }
                     XmlEvent::Whitespace(data) => {
                         ////println!(r#"Whitespace("{}")"#, data.escape_debug())
