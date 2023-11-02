@@ -129,7 +129,66 @@ fn main() -> Result<(), quick_xml::Error> {
 // xml-rs code example
 // ================================================================
 
-fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> { // Consume some, and return it.
+// We need a "find" as well... find abstract, return text, or something.
+
+fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
+    println!("find({tag})");
+    loop {
+        match reader.next() {
+            Ok(e) => {
+                //print!("{}\t", reader.position());
+                match e {
+                    XmlEvent::StartDocument {
+                        version, encoding, ..
+                    } => {
+                        println!("StartDocument({version}, {encoding})")
+                    }
+                    XmlEvent::EndDocument => {
+                        println!("EndDocument");
+                        break;
+                    }
+                    XmlEvent::ProcessingInstruction { name, data } => {
+                        println!(
+                            "ProcessingInstruction({name}={:?})",
+                            data.as_deref().unwrap_or_default()
+                        )
+                    }
+                    XmlEvent::StartElement {
+                        name, attributes, ..
+                    } => {
+                        if attributes.is_empty() {
+                            if name.local_name == tag {
+                                println!("FOUND {tag}");
+                                return reader;
+                            }
+                        } else {
+                            let attrs: Vec<_> = attributes
+                                .iter()
+                                .map(|a| format!("{}={:?}", &a.name, a.value))
+                                .collect();
+                            ////println!("StartElement({name} [{}])", attrs.join(", "));
+                            if name.local_name == tag {
+                                println!("FOUND {tag}");
+                                return reader;
+                            }
+                        } // else
+                    }, // StartElement
+                    _ => {println!("searching")},
+                } // match e
+            }, // Ok
+            Err(e) => {
+                eprintln!("Error at {}: {e}", reader.position());
+                break;
+            } // Err
+        } // reader.next
+    } // loop
+    
+    reader
+}
+
+// Consume some, and return it.
+fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
+    println!("loop_until({tag})");
     loop {
         match reader.next() { // wait for article-title
             Ok(e) => {
@@ -147,7 +206,7 @@ fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReade
                     XmlEvent::StartElement {
                         name, attributes, ..
                     } => {
-                        println!("In loop with {name}.");
+                        ////println!("In loop with {name}.");
                         if name.local_name == tag {
                             println!("We have it!");
                             // does reader.next() always give us the
@@ -188,6 +247,9 @@ fn xmlrs(file_path: String) {
         .ignore_root_level_whitespace(false)
         .create_reader(BufReader::new(file));
 
+    reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
+    reader = loop_until(reader, "p"); // Problem is, if we have a <italic> in the text...
+    
     loop {
         match reader.next() {
             Ok(e) => {
@@ -245,6 +307,12 @@ fn xmlrs(file_path: String) {
                                 .map(|a| format!("{}={:?}", &a.name, a.value))
                                 .collect();
                             ////println!("StartElement({name} [{}])", attrs.join(", "));
+
+                            if name.local_name == "secOFF" {
+                                reader = loop_until(reader, "title");
+                                reader = loop_until(reader, "p");
+                            }
+
                             if name.local_name == "sec" {
                                 print!("StartElement({name} [{}]): ", attrs.join(", "));
                                 let maybe_title = reader.next().unwrap();
