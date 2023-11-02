@@ -211,9 +211,12 @@ fn xmlrs(file_path: String) {
                         if attributes.is_empty() {
                             ////println!("StartElement({name})");
                             if name.local_name == "title-group" {
+
+                                reader = loop_until(reader, "article-title");
                                 
                                 // We should process until we get an EndElement title-group event...
                                 // This needs to become a separate function!
+                                /*
                                 loop {
                                     match reader.next() { // wait for article-title
                                         Ok(e) => {
@@ -253,7 +256,7 @@ fn xmlrs(file_path: String) {
                                         } // Err
                                     } // reader-next()
                                 } // loop
-                                
+                                */
                                 
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
