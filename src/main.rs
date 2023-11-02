@@ -129,7 +129,7 @@ fn main() -> Result<(), quick_xml::Error> {
 // xml-rs code example
 // ================================================================
 
-fn loop_until(mut reader: EventReader<BufReader<File>>) -> EventReader<BufReader<File>> { // Consume some, and return it.
+fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> { // Consume some, and return it.
     loop {
         match reader.next() { // wait for article-title
             Ok(e) => {
