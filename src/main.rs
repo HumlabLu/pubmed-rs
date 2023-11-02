@@ -116,10 +116,11 @@ fn main() -> Result<(), quick_xml::Error> {
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
         println!("--------Name: {}", path.as_ref().unwrap().path().display());
-        xmlrs(path.unwrap().path().display().to_string());
+        //xmlrs(path.unwrap().path().display().to_string());
     }
 
-    //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000161.xml"));
+    xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
+    xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254128.xml"));
 
     Ok(())
 }
@@ -172,7 +173,7 @@ fn xmlrs(file_path: String) {
                                 .collect();
                             ////println!("StartElement({name} [{}])", attrs.join(", "))
                             if name.local_name == "sec" {
-                                println!("StartElement({name} [{}])", attrs.join(", "));
+                                print!("StartElement({name} [{}]): ", attrs.join(", "));
                                 let maybe_title = reader.next().unwrap();
                                 //println!("{:?}", maybe_title);
                                 let maybe_title = reader.next();
@@ -183,7 +184,7 @@ fn xmlrs(file_path: String) {
                                             XmlEvent::Characters(data) => {
                                                 println!(r#"{}"#, data.escape_debug())
                                             },
-                                            _ => {},//todo!(), // Ignore the other XmlEvents.
+                                            _ => {println!("")},//todo!(), // Ignore the other XmlEvents.
                                         }
                                     },// Ok
                                     Err(e) => {
