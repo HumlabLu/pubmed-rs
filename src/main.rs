@@ -165,13 +165,33 @@ fn xmlrs(file_path: String) {
                         name, attributes, ..
                     } => {
                         if attributes.is_empty() {
-                            ////println!("StartElement({name})")
+                            ////println!("StartElement({name})");
+                            if name.local_name == "title-group" {
+                                // We should process until we get an EndElement event...
+                                let maybe_title = reader.next();
+                                let maybe_title = reader.next();
+                                //XmlEvent::Characters(data) => {
+                                match maybe_title {
+                                    Ok(e) => {
+                                        match e {
+                                            XmlEvent::Characters(data) => {
+                                                println!(r#"a-t {}"#, data.escape_debug())
+                                            },
+                                            _ => {println!("")},//todo!(), // Ignore the other XmlEvents.
+                                        }
+                                    },// Ok
+                                    Err(e) => {
+                                        eprintln!("Error at {}: {e}", reader.position());
+                                        break;
+                                    },
+                                } //match maybe_title
+                            } // arcticle-title
                         } else {
                             let attrs: Vec<_> = attributes
                                 .iter()
                                 .map(|a| format!("{}={:?}", &a.name, a.value))
                                 .collect();
-                            ////println!("StartElement({name} [{}])", attrs.join(", "))
+                            ////println!("StartElement({name} [{}])", attrs.join(", "));
                             if name.local_name == "sec" {
                                 print!("StartElement({name} [{}]): ", attrs.join(", "));
                                 let maybe_title = reader.next().unwrap();
@@ -196,14 +216,14 @@ fn xmlrs(file_path: String) {
                         } // else
                     } // StartElement
                     XmlEvent::EndElement { name } => {
-                        ////println!("EndElement({name})")
+                        //println!("EndElement({name})")
                     }
                     XmlEvent::Comment(data) => {
                         ////println!(r#"Comment("{}")"#, data.escape_debug())
                     }
                     XmlEvent::CData(data) => println!(r#"CData("{}")"#, data.escape_debug()),
                     XmlEvent::Characters(data) => {
-                        ////Println!(r#"Characters("{}")"#, data.escape_debug())
+                        ////println!(r#"Characters("{}")"#, data.escape_debug())
                     }
                     XmlEvent::Whitespace(data) => {
                         ////println!(r#"Whitespace("{}")"#, data.escape_debug())
