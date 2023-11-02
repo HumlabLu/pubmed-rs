@@ -9,7 +9,7 @@ use quick_xml::name::QName;
 use std::fs::File;
 use std::io::BufReader;
 use xml::common::Position;
-use xml::reader::{ParserConfig, XmlEvent};
+use xml::reader::{ParserConfig, XmlEvent, EventReader};
 
 use std::fs;
 
@@ -129,6 +129,50 @@ fn main() -> Result<(), quick_xml::Error> {
 // xml-rs code example
 // ================================================================
 
+fn loop_until(mut reader: EventReader<BufReader<File>>) -> EventReader<BufReader<File>> { // Consume some, and return it.
+    loop {
+        match reader.next() { // wait for article-title
+            Ok(e) => {
+                //print!("{}\t", reader.position());
+                match e {
+                    XmlEvent::EndElement { name } => {
+                        //println!("EndElement({name})")
+                        if name.local_name == "title-group" {
+                            // End the loop we started above.
+                            println!("Ending title-group.");
+                            break;
+                        }
+                    },
+                    XmlEvent::StartElement {
+                        name, attributes, ..
+                    } => {
+                        println!("In loop with {name}.");
+                        if name.local_name == "article-title" {
+                            println!("We have it!");
+                            // does reader.next() always give us the
+                            // title text?
+                        }
+                    },
+                    XmlEvent::EndDocument => { // this could happen?
+                        println!("EndDocument");
+                        break;
+                    },
+                    XmlEvent::Characters(data) => {
+                        println!(r#"loop a-t {}"#, data.escape_debug())
+                    },
+                    _ => {println!("waiting")},
+                } // match e
+            }, // OK
+            Err(e) => {
+                eprintln!("Error at {}: {e}", reader.position());
+                break;
+            } // Err
+        } // reader-next()
+    } // loop
+
+    reader
+}
+
 fn xmlrs(file_path: String) {
     //let file_path = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000166.xml");
     /*let file_path = std::env::args_os()
@@ -210,7 +254,6 @@ fn xmlrs(file_path: String) {
                                     } // reader-next()
                                 } // loop
                                 
-
                                 
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
