@@ -214,50 +214,6 @@ fn xmlrs(file_path: String) {
 
                                 reader = loop_until(reader, "article-title");
                                 
-                                // We should process until we get an EndElement title-group event...
-                                // This needs to become a separate function!
-                                /*
-                                loop {
-                                    match reader.next() { // wait for article-title
-                                        Ok(e) => {
-                                            //print!("{}\t", reader.position());
-                                            match e {
-                                                XmlEvent::EndElement { name } => {
-                                                    //println!("EndElement({name})")
-                                                    if name.local_name == "title-group" {
-                                                        // End the loop we started above.
-                                                        println!("Ending title-group.");
-                                                        break;
-                                                    }
-                                                },
-                                                XmlEvent::StartElement {
-                                                    name, attributes, ..
-                                                } => {
-                                                    println!("In loop with {name}.");
-                                                    if name.local_name == "article-title" {
-                                                        println!("We have it!");
-                                                        // does reader.next() always give us the
-                                                        // title text?
-                                                    }
-                                                },
-                                                XmlEvent::EndDocument => { // this could happen?
-                                                    println!("EndDocument");
-                                                    break;
-                                                },
-                                                XmlEvent::Characters(data) => {
-                                                    println!(r#"loop a-t {}"#, data.escape_debug())
-                                                },
-                                                _ => {println!("waiting")},
-                                            } // match e
-                                        }, // OK
-                                        Err(e) => {
-                                            eprintln!("Error at {}: {e}", reader.position());
-                                            break;
-                                        } // Err
-                                    } // reader-next()
-                                } // loop
-                                */
-                                
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
                                 //XmlEvent::Characters(data) => {
