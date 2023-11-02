@@ -115,7 +115,7 @@ fn main() -> Result<(), quick_xml::Error> {
 
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
-        println!("--------Name: {}", path.as_ref().unwrap().path().display());
+        //println!("--------Name: {}", path.as_ref().unwrap().path().display());
         //xmlrs(path.unwrap().path().display().to_string());
     }
 
@@ -167,7 +167,51 @@ fn xmlrs(file_path: String) {
                         if attributes.is_empty() {
                             ////println!("StartElement({name})");
                             if name.local_name == "title-group" {
-                                // We should process until we get an EndElement event...
+                                
+                                // We should process until we get an EndElement title-group event...
+                                // This needs to become a separate function!
+                                loop {
+                                    match reader.next() { // wait for article-title
+                                        Ok(e) => {
+                                            //print!("{}\t", reader.position());
+                                            match e {
+                                                XmlEvent::EndElement { name } => {
+                                                    //println!("EndElement({name})")
+                                                    if name.local_name == "title-group" {
+                                                        // End the loop we started above.
+                                                        println!("Ending title-group.");
+                                                        break;
+                                                    }
+                                                },
+                                                XmlEvent::StartElement {
+                                                    name, attributes, ..
+                                                } => {
+                                                    println!("In loop with {name}.");
+                                                    if name.local_name == "article-title" {
+                                                        println!("We have it!");
+                                                        // does reader.next() always give us the
+                                                        // title text?
+                                                    }
+                                                },
+                                                XmlEvent::EndDocument => { // this could happen?
+                                                    println!("EndDocument");
+                                                    break;
+                                                },
+                                                XmlEvent::Characters(data) => {
+                                                    println!(r#"loop a-t {}"#, data.escape_debug())
+                                                },
+                                                _ => {println!("waiting")},
+                                            } // match e
+                                        }, // OK
+                                        Err(e) => {
+                                            eprintln!("Error at {}: {e}", reader.position());
+                                            break;
+                                        } // Err
+                                    } // reader-next()
+                                } // loop
+                                
+
+                                
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
                                 //XmlEvent::Characters(data) => {
@@ -184,7 +228,7 @@ fn xmlrs(file_path: String) {
                                         eprintln!("Error at {}: {e}", reader.position());
                                         break;
                                     },
-                                } //match maybe_title
+                                } //Match maybe_title
                             } // arcticle-title
                         } else {
                             let attrs: Vec<_> = attributes
