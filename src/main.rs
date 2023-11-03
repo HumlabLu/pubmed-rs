@@ -197,6 +197,7 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> Eve
     println!("loop_until({tag})");
 
     let mut depth = 0;
+    let mut current_tag = String::from(tag);// = tag;
     
     // We are in a certain tag, loop until we find a closing
     // tag on the same depth.
@@ -208,6 +209,7 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> Eve
                     XmlEvent::EndElement { name } => {
                         //println!("EndElement({name})")
                         if depth == 0 && name.local_name == tag {
+                            println!("End of {tag}.");
                             return reader
                         }
                         depth -= 1;
@@ -217,13 +219,14 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> Eve
                     } => {
                         // Maybe have another parameter to only get a specific sub tag?
                         depth += 1;
+                        current_tag = name.local_name.clone();
                     },
                     XmlEvent::EndDocument => { // this could happen?
                         println!("EndDocument");
                         break;
                     },
                     XmlEvent::Characters(data) => {
-                        println!(r#"loop a-t {}"#, data.escape_debug()) // Return/save this also?
+                        println!(r#"loop({current_tag}) {}"#, data.escape_debug()) // Return/save this also?
                     },
                     _ => {println!("waiting")},
                 } // match e
@@ -308,6 +311,9 @@ fn xmlrs(file_path: String) {
 
     reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
     reader = loop_until_end_of(reader, "abstract"); // Problem is, if we have a <italic> in the text...
+
+    reader = find_tag(reader, "kwd-group"); // we really want the <astract>...</abstract> sub-tree.
+    reader = loop_until_end_of(reader, "kwd-group"); // Problem is, if we have a <italic> in the text...
 
 
     loop {
