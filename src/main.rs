@@ -119,8 +119,9 @@ fn main() -> Result<(), quick_xml::Error> {
         //xmlrs(path.unwrap().path().display().to_string());
     }
 
-    xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
-    xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254128.xml"));
+    //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
+    //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254128.xml"));
+    xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000424.xml"));
 
     Ok(())
 }
@@ -131,6 +132,9 @@ fn main() -> Result<(), quick_xml::Error> {
 
 // We need a "find" as well... find abstract, return text, or something.
 
+// An extract_X_until_Y function?
+
+// A <<sec> contains multiple <p> with text. We need a func to extract it.
 /*
   Find returns with the reader on the tag.
 */
@@ -191,10 +195,11 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
     reader
 }
 
-// Consume some, and return it. Consumes until closing "tag" has been
-// found.
+// Consume some, and return the reader. Consumes until the last "tag" has been
+// consumed. It returns when we move a level up again, so it is really
+// all sub-tags.
 fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
-    println!("loop_until({tag})");
+    println!("loop_until_end_of({tag})");
 
     let mut depth = 0;
     let mut current_tag = String::from(tag);// = tag;
@@ -207,12 +212,15 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> Eve
                 //print!("{}\t", reader.position());
                 match e {
                     XmlEvent::EndElement { name } => {
-                        //println!("EndElement({name})")
+                        println!("EndElement({name}, at {depth})");
                         if depth == 0 && name.local_name == tag {
                             println!("End of {tag}.");
                             return reader
                         }
                         depth -= 1;
+                        if depth < 0 {
+                            return reader;
+                        }
                     },
                     XmlEvent::StartElement {
                         name, attributes, ..
@@ -300,12 +308,41 @@ fn xmlrs(file_path: String) {
     /*let file_path = std::env::args_os()
     .nth(1)
     .expect("Please specify a path to an XML file");*/
-    let file = File::open(file_path).unwrap();
+
+    println!("FILE {file_path}");
+    let file = File::open(file_path.clone()).unwrap();
 
     let mut reader = ParserConfig::default()
         .ignore_root_level_whitespace(false)
         .create_reader(BufReader::new(file));
 
+    // All <sec> text
+    loop {
+        match reader.next() { // peek ?
+            Ok(e) => {
+                match e {
+                    XmlEvent::EndDocument => {
+                        println!("EndDocument");
+                        break;
+                    },
+                    XmlEvent::StartElement {
+                        name, attributes, ..
+                    } => {
+                        if name.local_name == "sec" {
+                            reader = loop_until_end_of(reader, "p"); // All <p> under <sec>
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            Err(e) => {
+                eprintln!("Error at {}: {e}", reader.position());
+                break;
+            }
+        }
+    }
+    return;
+    
     reader = find_tag(reader, "article-id"); 
     reader = loop_until_end_of(reader, "article-id"); // only finds one...
 
@@ -315,7 +352,8 @@ fn xmlrs(file_path: String) {
     reader = find_tag(reader, "kwd-group"); // we really want the <astract>...</abstract> sub-tree.
     reader = loop_until_end_of(reader, "kwd-group"); // Problem is, if we have a <italic> in the text...
 
-
+    //return;
+    
     loop {
         match reader.next() {
             Ok(e) => {
@@ -373,11 +411,6 @@ fn xmlrs(file_path: String) {
                                 .map(|a| format!("{}={:?}", &a.name, a.value))
                                 .collect();
                             ////println!("StartElement({name} [{}])", attrs.join(", "));
-
-                            if name.local_name == "secOFF" {
-                                reader = loop_until_end_of(reader, "title");
-                                reader = loop_until_end_of(reader, "p");
-                            }
 
                             if name.local_name == "sec" {
                                 print!("StartElement({name} [{}]): ", attrs.join(", "));
