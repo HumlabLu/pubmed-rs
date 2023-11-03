@@ -131,6 +131,9 @@ fn main() -> Result<(), quick_xml::Error> {
 
 // We need a "find" as well... find abstract, return text, or something.
 
+/*
+  Find returns with the reader on the tag.
+*/
 fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
     println!("find({tag})");
     loop {
@@ -161,7 +164,7 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
                                 println!("FOUND {tag}");
                                 return reader;
                             }
-                        } else {
+                        } else { // We're not using the attributes, could be combined.
                             let attrs: Vec<_> = attributes
                                 .iter()
                                 .map(|a| format!("{}={:?}", &a.name, a.value))
@@ -173,7 +176,9 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
                             }
                         } // else
                     }, // StartElement
-                    _ => {println!("searching")},
+                    _ => {
+                        //println!("Searching for {tag}.")
+                    },
                 } // match e
             }, // Ok
             Err(e) => {
@@ -186,9 +191,60 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
     reader
 }
 
-// Consume some, and return it.
-fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
+// Consume some, and return it. Consumes until closing "tag" has been
+// found.
+fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
     println!("loop_until({tag})");
+
+    let mut depth = 0;
+    
+    // We are in a certain tag, loop until we find a closing
+    // tag on the same depth.
+    loop {
+        match reader.next() {
+            Ok(e) => {
+                //print!("{}\t", reader.position());
+                match e {
+                    XmlEvent::EndElement { name } => {
+                        //println!("EndElement({name})")
+                        if depth == 0 && name.local_name == tag {
+                            return reader
+                        }
+                        depth -= 1;
+                    },
+                    XmlEvent::StartElement {
+                        name, attributes, ..
+                    } => {
+                        // Maybe have another parameter to only get a specific sub tag?
+                        depth += 1;
+                    },
+                    XmlEvent::EndDocument => { // this could happen?
+                        println!("EndDocument");
+                        break;
+                    },
+                    XmlEvent::Characters(data) => {
+                        println!(r#"loop a-t {}"#, data.escape_debug()) // Return/save this also?
+                    },
+                    _ => {println!("waiting")},
+                } // match e
+            }, // OK
+            Err(e) => {
+                eprintln!("Error at {}: {e}", reader.position());
+                break;
+            } // Err
+        } // reader-next()
+    } // loop
+
+    reader
+}
+
+fn loop_until_ORIG(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
+    println!("loop_until({tag})");
+
+    let mut depth = 0;
+
+    // We are in a certain tag, loop until we find a closing
+    // tag on the same depth.
     loop {
         match reader.next() { // wait for article-title
             Ok(e) => {
@@ -196,24 +252,24 @@ fn loop_until(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReade
                 match e {
                     XmlEvent::EndElement { name } => {
                         //println!("EndElement({name})")
-                        if name.local_name == tag {
-                            // End the loop we started above.
-                            //println!("Ending {tag}.");
-                            //return reader //break; // break continues... should we?
-                            //break; // ignore this, end when start element is something else
+                        depth -= 1;
+                        if depth == 0 && name.local_name == tag {
+                            return reader
                         }
                     },
                     XmlEvent::StartElement {
                         name, attributes, ..
                     } => {
                         ////println!("In loop with {name}.");
+                        depth += 1;
                         if name.local_name == tag {
                             println!("We have it!");
                             // does reader.next() always give us the
                             // title text?
                         } else {
-                            println!("Different tag... ending.");
+                            //println!("Different tag {:?}... ending.", name.local_name);
                             return reader
+                            // This should move to end tag with tag name and depth 0.
                         }
                     },
                     XmlEvent::EndDocument => { // this could happen?
@@ -247,9 +303,13 @@ fn xmlrs(file_path: String) {
         .ignore_root_level_whitespace(false)
         .create_reader(BufReader::new(file));
 
+    reader = find_tag(reader, "article-id"); 
+    reader = loop_until_end_of(reader, "article-id"); // only finds one...
+
     reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
-    reader = loop_until(reader, "p"); // Problem is, if we have a <italic> in the text...
-    
+    reader = loop_until_end_of(reader, "abstract"); // Problem is, if we have a <italic> in the text...
+
+
     loop {
         match reader.next() {
             Ok(e) => {
@@ -278,7 +338,7 @@ fn xmlrs(file_path: String) {
                             ////println!("StartElement({name})");
                             if name.local_name == "title-group" {
 
-                                reader = loop_until(reader, "article-title");
+                                reader = loop_until_end_of(reader, "article-title");
                                 
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
@@ -299,7 +359,7 @@ fn xmlrs(file_path: String) {
                                 } //Match maybe_title
                             } // arcticle-title
                             if name.local_name == "article-meta" {
-                                reader = loop_until(reader, "article-id");                                
+                                reader = loop_until_end_of(reader, "article-id");                                
                             }
                         } else {
                             let attrs: Vec<_> = attributes
@@ -309,8 +369,8 @@ fn xmlrs(file_path: String) {
                             ////println!("StartElement({name} [{}])", attrs.join(", "));
 
                             if name.local_name == "secOFF" {
-                                reader = loop_until(reader, "title");
-                                reader = loop_until(reader, "p");
+                                reader = loop_until_end_of(reader, "title");
+                                reader = loop_until_end_of(reader, "p");
                             }
 
                             if name.local_name == "sec" {
