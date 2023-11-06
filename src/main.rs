@@ -5,7 +5,22 @@ use xml::reader::{ParserConfig, XmlEvent, EventReader};
 
 use std::fs;
 
+use log::debug;
+use log::error;
+use log::info;
+use log::warn;
+
+/*
+    RUST_LOG=debug cargo run
+ */
+
 fn main() -> Result<(), quick_xml::Error> {
+    env_logger::init();
+    /*debug!("Mary has a little lamb");
+    error!("{}", "Its fleece was white as snow");
+    info!("{:?}", "And every where that Mary went");
+    warn!("{:#?}", "The lamb was sure to go");*/
+    
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
         let path_name = path.unwrap().path().display().to_string();
@@ -40,7 +55,7 @@ fn main() -> Result<(), quick_xml::Error> {
   Find returns with the reader on the tag.
 */
 fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
-    println!("find({tag})");
+    debug!("find({tag})");
     loop {
         match reader.next() {
             Ok(e) => {
@@ -49,14 +64,14 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
                     XmlEvent::StartDocument {
                         version, encoding, ..
                     } => {
-                        println!("StartDocument({version}, {encoding})")
+                        debug!("StartDocument({version}, {encoding})")
                     }
                     XmlEvent::EndDocument => {
-                        println!("EndDocument");
+                        debug!("EndDocument");
                         break;
                     }
                     XmlEvent::ProcessingInstruction { name, data } => {
-                        println!(
+                        debug!(
                             "ProcessingInstruction({name}={:?})",
                             data.as_deref().unwrap_or_default()
                         )
@@ -66,7 +81,7 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
                     } => {
                         if attributes.is_empty() {
                             if name.local_name == tag {
-                                println!("FOUND {tag}");
+                                debug!("FOUND {tag}");
                                 return reader;
                             }
                         } else { // We're not using the attributes, could be combined.
@@ -76,7 +91,7 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
                                 .collect();
                             ////println!("StartElement({name} [{}])", attrs.join(", "));
                             if name.local_name == tag {
-                                println!("FOUND {tag}");
+                                debug!("FOUND {tag}");
                                 return reader;
                             }
                         } // else
@@ -97,25 +112,26 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
 }
 
 // Consume some, and return the reader. Consumes until the last "tag" has been
-// consumed. It returns when we move a level up again, so it is really
+// consumed. It returns when we move a level up again, so it outputs all
 // all sub-tags.
 fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
-    println!("loop_until_end_of({tag})");
+    debug!("loop_until_end_of({tag})");
 
     let mut depth = 0;
-    let mut current_tag = String::from(tag);// = tag;
+    let mut current_tag = String::from(tag);
     
     // We are in a certain tag, loop until we find a closing
-    // tag on the same depth.
+    // tag on the same depth. We start by moving to the next
+    // tag!
     loop {
         match reader.next() {
             Ok(e) => {
                 //print!("{}\t", reader.position());
                 match e {
                     XmlEvent::EndElement { name } => {
-                        println!("EndElement({name}, at {depth})");
+                        debug!("EndElement({name}, at {depth})");
                         if depth == 0 && name.local_name == tag {
-                            println!("End of {tag}.");
+                            debug!("End of {tag}.");
                             return reader
                         }
                         depth -= 1;
@@ -131,13 +147,13 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> Eve
                         current_tag = name.local_name.clone();
                     },
                     XmlEvent::EndDocument => { // this could happen?
-                        println!("EndDocument");
+                        debug!("EndDocument");
                         break;
                     },
                     XmlEvent::Characters(data) => {
-                        println!(r#"loop({current_tag}) {}"#, data.escape_debug()) // Return/save this also?
+                        debug!(r#"loop({current_tag}) {}"#, data.escape_debug()) // Return/save this also?
                     },
-                    _ => {println!("waiting")},
+                    _ => {debug!("waiting")},
                 } // match e
             }, // OK
             Err(e) => {

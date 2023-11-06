@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 entrez-rs = "0.1.4"
+env_logger = "0.10.0"
+log = "0.4.20"
 quick-xml = "0.31.0"
 xml-rs = "0.8.19"
