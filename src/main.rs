@@ -30,9 +30,11 @@ fn main() -> Result<(), quick_xml::Error> {
         let mut reader = ParserConfig::default()
             .ignore_root_level_whitespace(false)
             .create_reader(BufReader::new(file));
-        
+
+        let mut text = String::from("");
         reader = find_tag(reader, "article-title"); 
-        reader = loop_until_end_of(reader, "article-title"); // only finds one...
+        reader = loop_until_end_of(reader, "article-title", &mut text); // only finds one...
+        println!("{:?}", text);
     }
 
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
@@ -114,7 +116,7 @@ fn find_tag(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<
 // Consume some, and return the reader. Consumes until the last "tag" has been
 // consumed. It returns when we move a level up again, so it outputs all
 // all sub-tags.
-fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
+fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str, mut res: &mut String) -> EventReader<BufReader<File>> {
     debug!("loop_until_end_of({tag})");
 
     let mut depth = 0;
@@ -151,7 +153,8 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> Eve
                         break;
                     },
                     XmlEvent::Characters(data) => {
-                        debug!(r#"loop({current_tag}) {}"#, data.escape_debug()) // Return/save this also?
+                        debug!(r#"loop({current_tag}) {}"#, data.escape_debug()); // Return/save this also?
+                        res.push_str(data.escape_debug().to_string().as_str());
                     },
                     _ => {debug!("waiting")},
                 } // match e
@@ -180,6 +183,7 @@ fn xmlrs(file_path: String) {
         .create_reader(BufReader::new(file));
 
     // All <sec> text
+    let mut text = String::from("");
     loop {
         match reader.next() { // peek ?
             Ok(e) => {
@@ -192,7 +196,7 @@ fn xmlrs(file_path: String) {
                         name, attributes, ..
                     } => {
                         if name.local_name == "sec" {
-                            reader = loop_until_end_of(reader, "p"); // All <p> under <sec>
+                            reader = loop_until_end_of(reader, "p", &mut text); // All <p> under <sec>
                         }
                     },
                     _ => {}
@@ -205,7 +209,8 @@ fn xmlrs(file_path: String) {
         }
     }
     return;
-    
+
+    /*
     reader = find_tag(reader, "article-id"); 
     reader = loop_until_end_of(reader, "article-id"); // only finds one...
 
@@ -214,7 +219,7 @@ fn xmlrs(file_path: String) {
 
     reader = find_tag(reader, "kwd-group"); // we really want the <astract>...</abstract> sub-tree.
     reader = loop_until_end_of(reader, "kwd-group"); // Problem is, if we have a <italic> in the text...
-
+     */
     //return;
     
     loop {
@@ -245,7 +250,7 @@ fn xmlrs(file_path: String) {
                             ////println!("StartElement({name})");
                             if name.local_name == "title-group" {
 
-                                reader = loop_until_end_of(reader, "article-title");
+                                reader = loop_until_end_of(reader, "article-title", &mut text);
                                 
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
@@ -266,7 +271,7 @@ fn xmlrs(file_path: String) {
                                 } //Match maybe_title
                             } // arcticle-title
                             if name.local_name == "article-meta" {
-                                reader = loop_until_end_of(reader, "article-id");                                
+                                reader = loop_until_end_of(reader, "article-id", &mut text);
                             }
                         } else {
                             let attrs: Vec<_> = attributes
