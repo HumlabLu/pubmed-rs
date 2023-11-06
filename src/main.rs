@@ -35,6 +35,11 @@ fn main() -> Result<(), quick_xml::Error> {
         reader = find_tag(reader, "article-title"); 
         reader = loop_until_end_of(reader, "article-title", &mut text); // only finds one...
         println!("{:?}", text);
+
+        let mut text = String::from("");
+        reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
+        reader = loop_until_end_of(reader, "abstract", &mut text);
+        println!("{:?}", text);
     }
 
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
