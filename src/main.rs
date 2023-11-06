@@ -23,6 +23,7 @@ fn main() -> Result<(), quick_xml::Error> {
     
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
+        break;
         let path_name = path.unwrap().path().display().to_string();
         println!("FILE {path_name}");
         let file = File::open(path_name).unwrap();
@@ -34,17 +35,43 @@ fn main() -> Result<(), quick_xml::Error> {
         let mut text = String::from("");
         reader = find_tag(reader, "article-title"); 
         reader = loop_until_end_of(reader, "article-title", &mut text); // only finds one...
-        println!("{:?}", text);
+        println!("TITLE {:?}", text);
 
         let mut text = String::from("");
         reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
         reader = loop_until_end_of(reader, "abstract", &mut text);
-        println!("{:?}", text);
+        println!("ABSTRACT {:?}", text);
     }
 
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254128.xml"));
     xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000424.xml"));
+
+
+    let path_name = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000424.xml");
+    println!("FILE {path_name}");
+    let file = File::open(path_name).unwrap();
+    
+    let mut reader = ParserConfig::default()
+        .ignore_root_level_whitespace(false)
+        .create_reader(BufReader::new(file));
+
+    // This shows that we need an array, we concatenate separate keywords.
+    let mut text = String::from("");
+    reader = find_tag(reader, "kwd-group"); 
+    reader = loop_until_end_of(reader, "kwd-group", &mut text); // only finds one...
+    println!("KWDS {:?}", text);
+
+    let mut text = String::from("");
+    reader = find_tag(reader, "article-title"); 
+    reader = loop_until_end_of(reader, "article-title", &mut text); // only finds one...
+    println!("TITLE {:?}", text);
+
+    
+    let mut text = String::from("");
+    reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
+    reader = loop_until_end_of(reader, "abstract", &mut text);
+    println!("ABSTRACT {:?}", text);
 
     Ok(())
 }
