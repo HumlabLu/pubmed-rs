@@ -13,6 +13,7 @@ use log::warn;
 use clap::Parser;
 
 use roxmltree::Document;
+use rayon::prelude::*;
 
 /*
     RUST_LOG=debug cargo run
@@ -48,6 +49,20 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
     Ok(file_paths)
 }
 
+/*
+// TRY THIS?
+use rayon::prelude::*;
+
+fn main() {
+    let files = vec!["file1.txt", "file2.txt", "file3.txt"]; // Example list of files
+
+    // Use a parallel iterator to process files
+    files.par_iter().for_each(|file| {
+        println!("{:?}", file);
+    });
+}
+
+*/
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     /*debug!("Mary has a little lamb");
@@ -61,9 +76,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.dirname.is_some() {
         match get_files_in_directory(args.dirname.unwrap()) {
             Ok(files) => {
-                for file in files {
+                //for file in files {
+                files.par_iter().for_each(|file| {
                     println!("{:?}", file);
-
+                    
                     match extract_text_from_sec(file) {
                         Ok(sections) => {
                             for (title, texts) in sections {
@@ -76,8 +92,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         Err(e) => eprintln!("Error: {}", e),
                     }
-
-                }
+                    
+                });
             }
             Err(e) => eprintln!("Failed to read directory: {}", e),
         }
@@ -91,7 +107,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(e) => eprintln!("Error: {}", e),
         }*/
-   
     
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
@@ -103,7 +118,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     for text in texts {
                         println!("Text: {}", text);
                     }
-                    println!("---"); // Separator for different sections
+                    println!("---"); // Separator for different sections.
                 }
             }
             Err(e) => eprintln!("Error: {}", e),
