@@ -199,7 +199,7 @@ version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "652a49499b7f2578892cd3c242b4d5c7b6d4ab1a4ef77de591f90b913d840f58"
 dependencies = [
- "quick-xml 0.20.0",
+ "quick-xml",
  "reqwest",
  "roxmltree 0.13.1",
  "serde",
@@ -752,9 +752,7 @@ dependencies = [
  "entrez-rs",
  "env_logger",
  "log",
- "quick-xml 0.31.0",
  "roxmltree 0.18.1",
- "xml-rs",
 ]
 
 [[package]]
@@ -765,15 +763,6 @@ checksum = "26aab6b48e2590e4a64d1ed808749ba06257882b461d01ca71baeb747074a6dd"
 dependencies = [
  "memchr",
  "serde",
-]
-
-[[package]]
-name = "quick-xml"
-version = "0.31.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1004a344b30a54e2ee58d66a71b32d2db2feb0a31f9a2d302bf0536f15de2a33"
-dependencies = [
- "memchr",
 ]
 
 [[package]]
@@ -1401,12 +1390,6 @@ dependencies = [
  "winapi 0.2.8",
  "winapi-build",
 ]
-
-[[package]]
-name = "xml-rs"
-version = "0.8.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fcb9cbac069e033553e8bb871be2fbdffcab578eb25bd0f7c508cedc6dcd75a"
 
 [[package]]
 name = "xmlparser"
