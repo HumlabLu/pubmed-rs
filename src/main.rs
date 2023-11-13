@@ -65,12 +65,25 @@ fn main() -> Result<(), quick_xml::Error> {
             Ok(files) => {
                 for file in files {
                     println!("{:?}", file);
+
+                    match extract_text_from_sec(file) {
+                        Ok(sections) => {
+                            for (title, texts) in sections {
+                                println!("Title: {}", title);
+                                for text in texts {
+                                    println!("Text: {}", text);
+                                }
+                                println!("---"); // Separator for different sections
+                            }
+                        }
+                        Err(e) => eprintln!("Error: {}", e),
+                    }
+
                 }
             }
             Err(e) => eprintln!("Failed to read directory: {}", e),
         }
     }
-
 
     match extract_text_from_sec("./PMC10000424.fmt.xml") {
         Ok(sections) => {
@@ -568,7 +581,7 @@ fn extract_text_from_p_tags_in_sec(file_path: &str) -> Result<Vec<String>, Box<d
     Ok(texts)
 }
 
-fn extract_text_from_sec(file_path: &str) -> Result<Vec<(String, Vec<String>)>, Box<dyn std::error::Error>> {
+fn extract_text_from_sec<P: AsRef<Path>>(file_path: P) -> Result<Vec<(String, Vec<String>)>, Box<dyn std::error::Error>> {
     let xml_content = fs::read_to_string(file_path)?;
     let doc = Document::parse(&xml_content)?;
 
