@@ -201,7 +201,7 @@ checksum = "652a49499b7f2578892cd3c242b4d5c7b6d4ab1a4ef77de591f90b913d840f58"
 dependencies = [
  "quick-xml 0.20.0",
  "reqwest",
- "roxmltree",
+ "roxmltree 0.13.1",
  "serde",
 ]
 
@@ -753,6 +753,7 @@ dependencies = [
  "env_logger",
  "log",
  "quick-xml 0.31.0",
+ "roxmltree 0.18.1",
  "xml-rs",
 ]
 
@@ -862,6 +863,15 @@ name = "roxmltree"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dbf7d7b1ea646d380d0e8153158063a6da7efe30ddbf3184042848e3f8a6f671"
+dependencies = [
+ "xmlparser",
+]
+
+[[package]]
+name = "roxmltree"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "862340e351ce1b271a378ec53f304a5558f7db87f3769dc655a8f6ecbb68b302"
 dependencies = [
  "xmlparser",
 ]

@@ -14,6 +14,8 @@ use log::warn;
 
 use clap::Parser;
 
+use roxmltree::Document;
+
 /*
     RUST_LOG=debug cargo run
 */
@@ -68,6 +70,17 @@ fn main() -> Result<(), quick_xml::Error> {
             Err(e) => eprintln!("Failed to read directory: {}", e),
         }
     }
+
+
+    match extract_text_from_p_tags_in_sec("./PMC10000424.fmt.xml") {
+        Ok(texts) => {
+            for text in texts {
+                println!("{}", text);
+            }
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+    return Ok(());
     
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
@@ -494,4 +507,88 @@ fn xmlrs(file_path: String) {
             }
         }
     }
+}
+
+// -------------------
+// roxmltree
+// -------------------
+
+fn extract_text_from_sec_tags(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let xml_content = fs::read_to_string(file_path)?;
+    let doc = Document::parse(&xml_content)?;
+
+    let mut texts = Vec::new();
+    for node in doc.descendants().filter(|n| n.has_tag_name("sec")) {
+        if let Some(text) = node.text() {
+            texts.push(text.to_string());
+        }
+    }
+
+    Ok(texts)
+}
+
+fn extract_text_from_p_tags_in_sec(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let xml_content = fs::read_to_string(file_path)?;
+    let doc = Document::parse(&xml_content)?;
+
+    let mut texts = Vec::new();
+
+    if let Some(body) = doc.descendants().find(|n| n.has_tag_name("body")) {
+        // Iterate over <sec> tags within the <body> tag
+        for sec in body.descendants().filter(|n| n.has_tag_name("sec")) {
+            // Iterate over <p> tags within each <sec> tag
+            for p in sec.descendants().filter(|n| n.has_tag_name("p")) {
+                let mut text_content = String::new();
+                for descendant in p.descendants() {
+                    if descendant.is_text() {
+                        text_content.push_str(descendant.text().unwrap_or(""));
+                    }
+                }
+                if !text_content.is_empty() {
+                    texts.push(text_content);
+                }
+            }
+        }
+    }
+    
+    Ok(texts)
+}
+
+fn extract_text_from_sec(file_path: &str) -> Result<Vec<(String, Vec<String>)>, Box<dyn std::error::Error>> {
+    let xml_content = fs::read_to_string(file_path)?;
+    let doc = Document::parse(&xml_content)?;
+
+    let mut sections = Vec::new();
+
+    // Find the <body> tag
+    if let Some(body) = doc.descendants().find(|n| n.has_tag_name("body")) {
+        // Iterate over <sec> tags within the <body> tag
+        for sec in body.descendants().filter(|n| n.has_tag_name("sec")) {
+            // Extract the title text
+            let title_text = sec.descendants().find(|n| n.has_tag_name("title"))
+                .and_then(|n| n.text())
+                .unwrap_or_default()
+                .to_string();
+
+            // Extract texts from <p> tags
+            let mut p_texts = Vec::new();
+            for p in sec.descendants().filter(|n| n.has_tag_name("p")) {
+                let mut text_content = String::new();
+                for descendant in p.descendants() {
+                    if descendant.is_text() {
+                        text_content.push_str(descendant.text().unwrap_or(""));
+                    }
+                }
+                if !text_content.is_empty() {
+                    p_texts.push(text_content);
+                }
+            }
+
+            if !title_text.is_empty() || !p_texts.is_empty() {
+                sections.push((title_text, p_texts));
+            }
+        }
+    }
+
+    Ok(sections)
 }
