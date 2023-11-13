@@ -72,14 +72,28 @@ fn main() -> Result<(), quick_xml::Error> {
     }
 
 
-    match extract_text_from_p_tags_in_sec("./PMC10000424.fmt.xml") {
+    match extract_text_from_sec("./PMC10000424.fmt.xml") {
+        Ok(sections) => {
+            for (title, texts) in sections {
+                println!("Title: {}", title);
+                for text in texts {
+                    println!("Text: {}", text);
+                }
+                println!("---"); // Separator for different sections
+            }
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+    
+    /*match extract_text_from_p_tags_in_sec("./PMC10000424.fmt.xml") {
         Ok(texts) => {
             for text in texts {
                 println!("{}", text);
             }
         }
         Err(e) => eprintln!("Error: {}", e),
-    }
+        }*/
+    
     return Ok(());
     
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
