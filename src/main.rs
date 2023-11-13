@@ -4,15 +4,49 @@ use xml::common::Position;
 use xml::reader::{ParserConfig, XmlEvent, EventReader};
 
 use std::fs;
+use std::path::{Path, PathBuf};
+use std::io;
 
 use log::debug;
 use log::error;
 use log::info;
 use log::warn;
 
+use clap::Parser;
+
 /*
     RUST_LOG=debug cargo run
- */
+*/
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Filename of the XML file to parse.
+    #[arg(short, long)]
+    filename: Option<String>,
+
+    /// Directory name.
+    #[arg(short, long)]
+    dirname: Option<String>,
+}
+
+fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
+    let mut file_paths = Vec::new();
+
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(ext) = path.extension() {
+                if ext == "xml" {
+                    file_paths.push(path);
+                }
+            }
+        }
+    }
+
+    Ok(file_paths)
+}
 
 fn main() -> Result<(), quick_xml::Error> {
     env_logger::init();
@@ -20,6 +54,20 @@ fn main() -> Result<(), quick_xml::Error> {
     error!("{}", "Its fleece was white as snow");
     info!("{:?}", "And every where that Mary went");
     warn!("{:#?}", "The lamb was sure to go");*/
+
+    let args = Args::parse();
+
+    // Check if dirname is not none first.
+    if args.dirname.is_some() {
+        match get_files_in_directory(args.dirname.unwrap()) {
+            Ok(files) => {
+                for file in files {
+                    println!("{:?}", file);
+                }
+            }
+            Err(e) => eprintln!("Failed to read directory: {}", e),
+        }
+    }
     
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
@@ -95,6 +143,9 @@ fn main() -> Result<(), quick_xml::Error> {
 
     Ok(())
 }
+
+fn parse_file(){}
+
 
 // ================================================================
 // xml-rs code example
