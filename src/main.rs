@@ -23,24 +23,25 @@ fn main() -> Result<(), quick_xml::Error> {
     
     let paths = fs::read_dir("/Users/pberck/Downloads/PMC010xxxxxx/").unwrap();
     for path in paths {
-        break;
+        //break;
         let path_name = path.unwrap().path().display().to_string();
-        println!("FILE {path_name}");
+        info!("FILE {path_name}");
         let file = File::open(path_name).unwrap();
         
         let mut reader = ParserConfig::default()
             .ignore_root_level_whitespace(false)
             .create_reader(BufReader::new(file));
 
-        let mut text = String::from("");
+        let mut text: Vec<String> = Vec::new();
         reader = find_tag(reader, "article-title"); 
-        reader = loop_until_end_of_old(reader, "article-title", &mut text); // only finds one...
-        println!("TITLE {:?}", text);
+        reader = loop_until_end_of(reader, "article-title", &mut text); // only finds one...
+        info!("TITLE {:?}", text);
 
-        let mut text = String::from("");
+        let mut text: Vec<String> = Vec::new();
         reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
-        reader = loop_until_end_of_old(reader, "abstract", &mut text);
-        println!("ABSTRACT {:?}", text);
+        reader = loop_until_end_of(reader, "abstract", &mut text);
+        info!("ABSTRACT {:?}", text);
+        break; // do only one
     }
 
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
@@ -80,6 +81,17 @@ fn main() -> Result<(), quick_xml::Error> {
     reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
     reader = loop_until_end_of(reader, "sec", &mut textv);
     println!("SEC {:?}", textv);
+    //println!("{}", textv.join(""));
+    let mut textv: Vec<String> = Vec::new();
+    reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
+    reader = loop_until_end_of(reader, "sec", &mut textv);
+    println!("SEC {:?}", textv);
+    //println!("{}", textv.join(""));
+    let mut textv: Vec<String> = Vec::new();
+    reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
+    reader = loop_until_end_of(reader, "sec", &mut textv);
+    println!("SEC {:?}", textv);
+    //println!("{}", textv.join(""));
 
     Ok(())
 }
@@ -158,6 +170,9 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str, mut re
 
     let mut depth = 0;
     let mut current_tag = String::from(tag);
+    let mut ignore_data = false;
+    
+    //for e in reader.into_iter() {}
     
     // We are in a certain tag, loop until we find a closing
     // tag on the same depth. We start by moving to the next
@@ -165,7 +180,71 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str, mut re
     loop {
         match reader.next() {
             Ok(e) => {
-                //print!("{}\t", reader.position());
+                debug!("Position {}\t", reader.position());
+                match e {
+                    XmlEvent::EndElement { name } => {
+                        debug!("EndElement({name}, at {depth})");
+                        if depth == 0 && name.local_name == tag {
+                            debug!("End of {tag}.");
+                            return reader
+                        }
+                        depth -= 1;
+                        ignore_data = false;
+                        if depth < 0 {
+                            return reader;
+                        }
+                    },
+                    XmlEvent::StartElement {
+                        name, attributes, ..
+                    } => {
+                        // Maybe have another parameter to only get a specific sub tag?
+                        depth += 1;
+                        current_tag = name.local_name.clone();
+                        debug!("StartElement({name}, at {depth})");
+                        if current_tag == "xref" { // Need a list (parameter).
+                            ignore_data = true;
+                        }
+                    },
+                    XmlEvent::EndDocument => { // this could happen?
+                        debug!("EndDocument");
+                        break;
+                    },
+                    XmlEvent::Characters(data) => {
+                        debug!(r#"loop({current_tag}) {}"#, data.escape_debug()); // Return/save this also?
+                        if ignore_data == false {
+                            res.push(data.escape_debug().to_string().clone());
+                            //debug!("DATA {}", data.escape_debug().to_string());
+                            // We get stray "," from the xref - maybe not add those...
+                        }
+                    },
+                    _ => {debug!("waiting")},
+                } // match e
+            }, // OK
+            Err(e) => {
+                eprintln!("Error at {}: {e}", reader.position());
+                break;
+            } // Err
+        } // reader-next()
+    } // loop
+
+    reader
+}
+
+fn ignore_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str) -> EventReader<BufReader<File>> {
+    debug!("ignore_until_end_of({tag})");
+
+    let mut depth = 0;
+    let mut current_tag = String::from(tag);
+
+    //for e in reader.into_iter() {}
+    
+    // We are in a certain tag, loop until we find a closing
+    // tag on the same depth. We start by moving to the next
+    // tag!
+    loop {
+        match reader.next() {
+            Ok(e) => {
+                debug!("Position {}\t", reader.position());
                 match e {
                     XmlEvent::EndElement { name } => {
                         debug!("EndElement({name}, at {depth})");
@@ -184,6 +263,7 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str, mut re
                         // Maybe have another parameter to only get a specific sub tag?
                         depth += 1;
                         current_tag = name.local_name.clone();
+                        debug!("StartElement({name}, at {depth})");
                     },
                     XmlEvent::EndDocument => { // this could happen?
                         debug!("EndDocument");
@@ -191,7 +271,7 @@ fn loop_until_end_of(mut reader: EventReader<BufReader<File>>, tag: &str, mut re
                     },
                     XmlEvent::Characters(data) => {
                         debug!(r#"loop({current_tag}) {}"#, data.escape_debug()); // Return/save this also?
-                        res.push(data.escape_debug().to_string().clone());
+                        //IGNORE data
                     },
                     _ => {debug!("waiting")},
                 } // match e
@@ -233,7 +313,7 @@ fn xmlrs(file_path: String) {
                         name, attributes, ..
                     } => {
                         if name.local_name == "sec" {
-                            reader = loop_until_end_of_old(reader, "p", &mut text); // All <p> under <sec>
+                            //reader = loop_until_end_of_old(reader, "p", &mut text); // All <p> under <sec>
                         }
                     },
                     _ => {}
@@ -287,7 +367,7 @@ fn xmlrs(file_path: String) {
                             ////println!("StartElement({name})");
                             if name.local_name == "title-group" {
 
-                                reader = loop_until_end_of_old(reader, "article-title", &mut text);
+                                //reader = loop_until_end_of_old(reader, "article-title", &mut text);
                                 
                                 let maybe_title = reader.next();
                                 let maybe_title = reader.next();
@@ -308,7 +388,7 @@ fn xmlrs(file_path: String) {
                                 } //Match maybe_title
                             } // arcticle-title
                             if name.local_name == "article-meta" {
-                                reader = loop_until_end_of_old(reader, "article-id", &mut text);
+                                //reader = loop_until_end_of_old(reader, "article-id", &mut text);
                             }
                         } else {
                             let attrs: Vec<_> = attributes
