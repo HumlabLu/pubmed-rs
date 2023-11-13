@@ -94,52 +94,54 @@ fn main() -> Result<(), quick_xml::Error> {
 
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254423.xml"));
     //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10254128.xml"));
-    xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000424.xml"));
+    //xmlrs(String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000424.xml"));
 
 
-    let path_name = String::from("/Users/pberck/Downloads/PMC010xxxxxx/PMC10000424.xml");
-    println!("FILE {path_name}");
-    let file = File::open(path_name).unwrap();
-    
-    let mut reader = ParserConfig::default()
-        .ignore_root_level_whitespace(false)
-        .create_reader(BufReader::new(file));
-
-    // This shows that we need an array, we concatenate separate keywords.
-    /*
-    let mut textv: Vec<String> = Vec::new();
-    reader = find_tag(reader, "kwd-group"); 
-    //reader = loop_until_end_of(reader, "kwd-group", &mut text); // only finds one...
-    reader = loop_until_end_of(reader, "kwd-group", &mut textv); // only finds one...
-    //println!("KWDS {:?}", text);
-    println!("KWDS {:?}", textv);
-     */
-    
-    let mut textv: Vec<String> = Vec::new();
-    reader = find_tag(reader, "article-title"); 
-    reader = loop_until_end_of(reader, "article-title", &mut textv); // only finds one...
-    println!("TITLE {:?}", textv);
-
-    let mut textv: Vec<String> = Vec::new();
-    reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
-    reader = loop_until_end_of(reader, "abstract", &mut textv);
-    println!("ABSTRACT {:?}", textv);
-
-    let mut textv: Vec<String> = Vec::new();
-    reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
-    reader = loop_until_end_of(reader, "sec", &mut textv);
-    println!("SEC {:?}", textv);
-    //println!("{}", textv.join(""));
-    let mut textv: Vec<String> = Vec::new();
-    reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
-    reader = loop_until_end_of(reader, "sec", &mut textv);
-    println!("SEC {:?}", textv);
-    //println!("{}", textv.join(""));
-    let mut textv: Vec<String> = Vec::new();
-    reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
-    reader = loop_until_end_of(reader, "sec", &mut textv);
-    println!("SEC {:?}", textv);
-    //println!("{}", textv.join(""));
+    if args.filename.is_some() {
+        let path_name = args.filename.unwrap();
+        info!("FILE {path_name}");
+        let file = File::open(path_name).unwrap();
+        
+        let mut reader = ParserConfig::default()
+            .ignore_root_level_whitespace(false)
+            .create_reader(BufReader::new(file));
+        
+        // This shows that we need an array, we concatenate separate keywords.
+        /*
+        let mut textv: Vec<String> = Vec::new();
+        reader = find_tag(reader, "kwd-group"); 
+        //reader = loop_until_end_of(reader, "kwd-group", &mut text); // only finds one...
+        reader = loop_until_end_of(reader, "kwd-group", &mut textv); // only finds one...
+        //println!("KWDS {:?}", text);
+        println!("KWDS {:?}", textv);
+         */
+        
+        let mut textv: Vec<String> = Vec::new();
+        reader = find_tag(reader, "article-title"); 
+        reader = loop_until_end_of(reader, "article-title", &mut textv); // only finds one...
+        println!("TITLE {:?}", textv);
+        
+        let mut textv: Vec<String> = Vec::new();
+        reader = find_tag(reader, "abstract"); // we really want the <astract>...</abstract> sub-tree.
+        reader = loop_until_end_of(reader, "abstract", &mut textv);
+        println!("ABSTRACT {:?}", textv);
+        
+        let mut textv: Vec<String> = Vec::new();
+        reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
+        reader = loop_until_end_of(reader, "sec", &mut textv);
+        println!("SEC {:?}", textv);
+        //println!("{}", textv.join(""));
+        let mut textv: Vec<String> = Vec::new();
+        reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
+        reader = loop_until_end_of(reader, "sec", &mut textv);
+        println!("SEC {:?}", textv);
+        //println!("{}", textv.join(""));
+        let mut textv: Vec<String> = Vec::new();
+        reader = find_tag(reader, "sec"); // we really want the <astract>...</abstract> sub-tree.
+        reader = loop_until_end_of(reader, "sec", &mut textv);
+        println!("SEC {:?}", textv);
+        //println!("{}", textv.join(""));
+    }
 
     Ok(())
 }
