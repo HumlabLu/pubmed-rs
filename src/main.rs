@@ -29,6 +29,10 @@ struct Args {
     /// Directory name.
     #[arg(short, long)]
     dirname: Option<String>,
+
+    /// Maximum number of files to process.
+    #[arg(short, long)]
+    maxfiles: Option<usize>,
 }
 
 fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
@@ -49,20 +53,6 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
     Ok(file_paths)
 }
 
-/*
-// TRY THIS?
-use rayon::prelude::*;
-
-fn main() {
-    let files = vec!["file1.txt", "file2.txt", "file3.txt"]; // Example list of files
-
-    // Use a parallel iterator to process files
-    files.par_iter().for_each(|file| {
-        println!("{:?}", file);
-    });
-}
-
-*/
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     /*debug!("Mary has a little lamb");
@@ -74,8 +64,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Check if dirname is not none first.
     if args.dirname.is_some() {
-        match get_files_in_directory(args.dirname.unwrap()) {
-            Ok(files) => {
+        let mut dirfiles = get_files_in_directory(args.dirname.unwrap());
+        match dirfiles {
+            Ok(mut files) => {
+                if let Some(count) = args.maxfiles {
+                    files.truncate(count);
+                }
                 //for file in files {
                 files.par_iter().for_each(|file| {
                     println!("{:?}", file);
@@ -83,31 +77,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     match extract_text_from_sec(file) {
                         Ok(sections) => {
                             for (title, texts) in sections {
-                                println!("Title: {}", title);
+                                println!("{:?} Title: {}", file, title);
                                 for text in texts {
-                                    println!("Text: {}", text);
+                                    println!("{:?} Text: {}", file, text);
                                 }
                                 println!("---"); // Separator for different sections
                             }
                         }
                         Err(e) => eprintln!("Error: {}", e),
                     }
-                    
                 });
             }
             Err(e) => eprintln!("Failed to read directory: {}", e),
         }
     }
 
-    /*match extract_text_from_p_tags_in_sec("./PMC10000424.fmt.xml") {
-        Ok(texts) => {
-            for text in texts {
-                println!("{}", text);
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-        }*/
-    
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
         info!("FILE {path_name}");
