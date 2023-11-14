@@ -38,6 +38,12 @@ struct Args {
 fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
     let mut file_paths = Vec::new();
 
+    let args = Args::parse();
+    let mut counter:usize = 0;
+    if let Some(count) = args.maxfiles {
+        counter = count;
+    }
+    
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
@@ -45,6 +51,14 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
             if let Some(ext) = path.extension() {
                 if ext == "xml" {
                     file_paths.push(path);
+                    
+                    if counter > 0 {
+                        counter -= 1;
+                        if counter == 0 {
+                            break;
+                        }
+                    }
+
                 }
             }
         }
@@ -67,9 +81,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut dirfiles = get_files_in_directory(args.dirname.unwrap());
         match dirfiles {
             Ok(mut files) => {
-                if let Some(count) = args.maxfiles {
-                    files.truncate(count);
-                }
                 //for file in files {
                 files.par_iter().for_each(|file| {
                     println!("{:?}", file);
