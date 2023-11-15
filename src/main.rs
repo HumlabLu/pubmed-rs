@@ -15,6 +15,9 @@ use clap::Parser;
 use roxmltree::Document;
 use rayon::prelude::*;
 
+mod json;
+use json::extract_text_from_json;
+
 /*
     RUST_LOG=debug cargo run
 */
@@ -67,6 +70,9 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
     Ok(file_paths)
 }
 
+// With and without par_iter()
+// cargo run -- -d ~/Downloads/PMC010xxxxxx -m 10000 > /dev/null  129.77s user 3.32s system 836% cpu   15.91 total
+// cargo run -- -d ~/Downloads/PMC010xxxxxx -m 10000 > /dev/null  109.70s user 2.96s system  97% cpu 1:55.92 total
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     /*debug!("Mary has a little lamb");
@@ -74,6 +80,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("{:?}", "And every where that Mary went");
     warn!("{:#?}", "The lamb was sure to go");*/
 
+
+    match extract_text_from_json("/Users/pberck/Downloads/2020-08-15/document_parses/pmc_json/PMC7279044.xml.json") {
+        Ok(texts) => {
+            for text in texts {
+                println!("{}", text);
+            }
+        },
+        Err(e) => println!("Error reading or parsing JSON: {}", e),
+    }
+    return Ok(());
+
+    
     let args = Args::parse();
 
     // Check if dirname is not none first.
