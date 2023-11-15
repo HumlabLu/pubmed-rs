@@ -52,7 +52,7 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
         let path = entry.path();
         if path.is_file() {
             if let Some(ext) = path.extension() {
-                if ext == "xml" {
+                if ext == "xml" || ext == "json" {
                     file_paths.push(path);
                     
                     if counter > 0 {
@@ -79,18 +79,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     error!("{}", "Its fleece was white as snow");
     info!("{:?}", "And every where that Mary went");
     warn!("{:#?}", "The lamb was sure to go");*/
-
-
-    match extract_text_from_json("/Users/pberck/Downloads/2020-08-15/document_parses/pmc_json/PMC7279044.xml.json") {
-        Ok(texts) => {
-            for text in texts {
-                println!("{}", text);
-            }
-        },
-        Err(e) => println!("Error reading or parsing JSON: {}", e),
-    }
-    return Ok(());
-
     
     let args = Args::parse();
 
@@ -102,19 +90,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 //for file in files {
                 files.par_iter().for_each(|file| {
                     println!("{:?}", file);
-                    
-                    match extract_text_from_sec(file) {
-                        Ok(sections) => {
-                            for (title, texts) in sections {
-                                println!("{:?} Title: {}", file, title);
-                                for text in texts {
-                                    println!("{:?} Text: {}", file, text);
-                                }
-                                println!("---"); // Separator for different sections
+
+                    match extract_text_from_json(file) {
+                        Ok(texts) => {
+                            for text in texts {
+                                println!("{}", text);
                             }
-                        }
-                        Err(e) => eprintln!("Error: {}", e),
+                        },
+                        Err(e) => println!("Error reading or parsing JSON: {}", e),
                     }
+
+                    if false {
+                        match extract_text_from_sec(file) {
+                            Ok(sections) => {
+                                for (title, texts) in sections {
+                                    println!("{:?} Title: {}", file, title);
+                                    for text in texts {
+                                        println!("{:?} Text: {}", file, text);
+                                    }
+                                    println!("---"); // Separator for different sections
+                                }
+                            }
+                            Err(e) => eprintln!("Error: {}", e),
+                        }
+                    }
+                    
                 });
             }
             Err(e) => eprintln!("Failed to read directory: {}", e),
@@ -124,18 +124,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
         info!("FILE {path_name}");
-        match extract_text_from_sec(path_name) {
-            Ok(sections) => {
-                for (title, texts) in sections {
-                    println!("Title: {}", title);
-                    for text in texts {
-                        println!("Text: {}", text);
-                    }
-                    println!("---"); // Separator for different sections.
+
+        match extract_text_from_json(path_name.clone()) {
+            Ok(texts) => {
+                for text in texts {
+                    println!("{}", text);
                 }
-            }
-            Err(e) => eprintln!("Error: {}", e),
+            },
+            Err(e) => println!("Error reading or parsing JSON: {}", e),
         }
+
+        if false {
+            match extract_text_from_sec(path_name) {
+                Ok(sections) => {
+                    for (title, texts) in sections {
+                        println!("Title: {}", title);
+                        for text in texts {
+                            println!("Text: {}", text);
+                        }
+                        println!("---"); // Separator for different sections.
+                    }
+                }
+                Err(e) => eprintln!("Error: {}", e),
+            }
+        }
+        
     }
     
     Ok(())
