@@ -36,6 +36,10 @@ struct Args {
     /// Maximum number of files to process.
     #[arg(short, long)]
     maxfiles: Option<usize>,
+
+    /// Include the section names in the output.
+    #[arg(short, long, action)]
+    sectionnames: bool,
 }
 
 fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
@@ -87,18 +91,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut dirfiles = get_files_in_directory(args.dirname.unwrap());
         match dirfiles {
             Ok(mut files) => {
-                //for file in files {
+                // iter(), par_iter() {
                 files.par_iter().for_each(|file| {
-                    println!("{:?}", file);
-
                     match extract_text_from_json(file) {
                         Ok(texts) => {
-                            for (section, text) in &texts {
-                                println!("{section}");
+                            println!("-- {:?}", file.file_name().unwrap());
+                            if texts.len() > 2 {
+                                for (section, text) in &texts {
+                                    if args.sectionnames == true {
+                                        println!("({section}) {text}");
+                                    } else {
+                                        println!("{text}");
+                                    }
+                                }
+                            } else {
+                                println!("Only {} sections.", texts.len());
                             }
-                            /*for text in texts {
-                                println!("{}", text);
-                            }*/
                         },
                         Err(e) => println!("Error reading or parsing JSON: {}", e),
                     }
@@ -130,12 +138,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         match extract_text_from_json(path_name.clone()) {
             Ok(texts) => {
-                for (section, text) in &texts {
-                    println!("{section}");
+                println!("-- {:?}", path_name);
+                if texts.len() > 2 {
+                    for (section, text) in &texts {
+                        if args.sectionnames == true {
+                            println!("({section}) {text}");
+                        } else {
+                            println!("{text}");
+                        }
+                    }
+                } else {
+                    println!("Only {} sections.", texts.len());
                 }
-                /*for text in texts {
-                    println!("{}", text);
-                }*/
             },
             Err(e) => println!("Error reading or parsing JSON: {}", e),
         }
