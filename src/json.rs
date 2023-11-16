@@ -22,14 +22,9 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<Vec<String
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
             let mut clean_text = String::from(text);
-            if current_section == "UNKNOWN" {
-                current_section = format!("{}{}", section_number, clean_text.clone());
-            } else {
-                
-                if current_section != format!("{}{}", section_number, clean_text.clone()) { // a new one (assuming in order)
-                    section_number += 1;
-                    current_section = format!("{}{}", section_number, clean_text.clone());
-                }
+            if current_section != format!("{:02}:{}", section_number, clean_text.clone()) { // a new one (assuming in order)
+                section_number += 1;
+                current_section = format!("{:02}:{}", section_number, clean_text.clone());
             }
             
             //println!("{}", clean_text); // Return this too?
