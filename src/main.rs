@@ -18,6 +18,8 @@ use rayon::prelude::*;
 mod json;
 use json::extract_text_from_json;
 
+use std::collections::BTreeMap;
+
 /*
     RUST_LOG=debug cargo run
 */
@@ -40,6 +42,10 @@ struct Args {
     /// Include the section names in the output.
     #[arg(short, long, action)]
     sectionnames: bool,
+
+    /// Include the file names in the output.
+    #[arg(long, action)]
+    filenames: bool,
 }
 
 fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
@@ -95,18 +101,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 files.par_iter().for_each(|file| {
                     match extract_text_from_json(file) {
                         Ok(texts) => {
-                            println!("-- {:?}", file.file_name().unwrap());
-                            if texts.len() > 2 {
-                                for (section, text) in &texts {
-                                    if args.sectionnames == true {
-                                        println!("({section}) {text}");
-                                    } else {
-                                        println!("{text}");
-                                    }
-                                }
-                            } else {
-                                println!("Only {} sections.", texts.len());
-                            }
+                            output(file.file_name().unwrap().to_str().unwrap(), texts);
                         },
                         Err(e) => println!("Error reading or parsing JSON: {}", e),
                     }
@@ -138,18 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         match extract_text_from_json(path_name.clone()) {
             Ok(texts) => {
-                println!("-- {:?}", path_name);
-                if texts.len() > 2 {
-                    for (section, text) in &texts {
-                        if args.sectionnames == true {
-                            println!("({section}) {text}");
-                        } else {
-                            println!("{text}");
-                        }
-                    }
-                } else {
-                    println!("Only {} sections.", texts.len());
-                }
+                output(&path_name, texts);
             },
             Err(e) => println!("Error reading or parsing JSON: {}", e),
         }
@@ -172,6 +156,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     
     Ok(())
+}
+
+// ================================================================
+// Output
+// ================================================================
+
+fn output(filename: &str, texts: BTreeMap<String, String>) {
+    let args = Args::parse();
+
+    if args.filenames == true {
+        println!("-- {:?}", filename);
+    }
+    if texts.len() > 2 {
+        for (section, text) in &texts {
+            if args.sectionnames == true {
+                println!("({section}) {text}");
+            } else {
+                println!("{text}");
+            }
+        }
+    } else {
+        println!("Only {} sections.", texts.len());
+    }
 }
 
 // ================================================================

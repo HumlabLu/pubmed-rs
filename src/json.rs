@@ -5,6 +5,9 @@ use std::path::{Path, PathBuf};
 
 use std::collections::BTreeMap;
 
+//extern crate regex;
+use regex::Regex;
+
 // ===========================================================================
 
 pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>, Box<dyn std::error::Error>> {
@@ -16,7 +19,9 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     let mut fulltext = BTreeMap::new(); // This one is sorted.
     let mut current_section = String::from("UNKNOWN");
     let mut section_number = 0usize;
-    
+
+    let remove_re = Regex::new(r"\n\d{1,2}").unwrap();
+    // “ ”
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
             let mut clean_text = String::from(text);
@@ -29,18 +34,22 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
         // store as datat[section] += clean_text or something.
         if let Some(text) = entry["text"].as_str() {
             let mut clean_text = String::from(text);
+
+            // Quick fix for "\n1" type of refs.
+            let clean_text = remove_re.replace_all(&clean_text, "");
             
-            /*
-            if let Some(cite_spans) = entry["cite_spans"].as_array() {
-                for cite_span in cite_spans.iter().rev() {
-                    println!("{:?}", cite_span);
-                    if let (Some(start), Some(end)) = (cite_span["start"].as_i64(), cite_span["end"].as_i64()) {
-                        // This affect the positions after...
-                        clean_text.replace_range(start as usize..=end as usize, "");
+            if false {
+                if let Some(cite_spans) = entry["cite_spans"].as_array() {
+                    for cite_span in cite_spans.iter().rev() {
+                        println!("{:?}", cite_span);
+                        if let (Some(start), Some(end)) = (cite_span["start"].as_i64(), cite_span["end"].as_i64()) {
+                            // This affect the positions after... utf-8 gives wrong spans?
+                            //clean_text.replace_range(start as usize..=end as usize, "");
+                        }
                     }
                 }
-              }
-            */
+            }
+            
             
             fulltext.entry(current_section.clone()).or_insert_with(String::new).push_str(&clean_text);             
         }

@@ -801,6 +801,7 @@ dependencies = [
  "env_logger",
  "log",
  "rayon",
+ "regex",
  "roxmltree 0.18.1",
  "serde",
  "serde_json",
