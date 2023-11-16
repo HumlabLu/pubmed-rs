@@ -93,9 +93,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     match extract_text_from_json(file) {
                         Ok(texts) => {
-                            for text in texts {
-                                println!("{}", text);
+                            for (section, text) in &texts {
+                                println!("{section}");
                             }
+                            /*for text in texts {
+                                println!("{}", text);
+                            }*/
                         },
                         Err(e) => println!("Error reading or parsing JSON: {}", e),
                     }
@@ -127,9 +130,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         match extract_text_from_json(path_name.clone()) {
             Ok(texts) => {
-                for text in texts {
-                    println!("{}", text);
+                for (section, text) in &texts {
+                    println!("{section}");
                 }
+                /*for text in texts {
+                    println!("{}", text);
+                }*/
             },
             Err(e) => println!("Error reading or parsing JSON: {}", e),
         }

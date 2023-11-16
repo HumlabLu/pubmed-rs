@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 // ===========================================================================
 
-pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>, Box<dyn std::error::Error>> {
     let data = fs::read_to_string(file_path)?;
     let json: Value = serde_json::from_str(&data)?;
 
@@ -53,12 +53,13 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<Vec<String
         }
     }
 
+    //let _: () = fulltext; // BTreeMap<String, String>
     println!("{:?}", fulltext);
     // Iterate over everything.
     for (section, text) in &fulltext {
         println!("{section}");
     }
     
-    Ok(texts)
+    Ok(fulltext)
 }
 
