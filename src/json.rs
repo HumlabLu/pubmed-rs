@@ -21,6 +21,9 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     let mut section_number = 0usize;
 
     let remove_re = Regex::new(r"\n\d{1,2}").unwrap();
+    let remove_re1 = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap();
+    
+
     // “ ”
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
@@ -37,6 +40,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
 
             // Quick fix for "\n1" type of refs.
             let clean_text = remove_re.replace_all(&clean_text, "");
+            let clean_text = remove_re1.replace_all(&clean_text, " REGEX ");
             
             if false {
                 if let Some(cite_spans) = entry["cite_spans"].as_array() {

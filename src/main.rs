@@ -177,7 +177,7 @@ fn output(filename: &str, texts: BTreeMap<String, String>) {
             }
         }
     } else {
-        println!("Only {} sections.", texts.len());
+        info!("Only {} sections.", texts.len());
     }
 }
 
