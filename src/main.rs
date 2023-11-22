@@ -17,6 +17,8 @@ use json::extract_text_from_json;
 
 use std::collections::BTreeMap;
 
+use anyhow::Result;
+
 /*
     RUST_LOG=debug cargo run
 */
@@ -50,7 +52,7 @@ struct Args {
 }
 
 // With trait bounds.
-fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
+fn get_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>> {
     let mut file_paths = Vec::new();
 
     let args = Args::parse();
@@ -85,7 +87,7 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
 // With and without par_iter()
 // cargo run -- -d ~/Downloads/PMC010xxxxxx -m 10000 > /dev/null  129.77s user 3.32s system 836% cpu   15.91 total
 // cargo run -- -d ~/Downloads/PMC010xxxxxx -m 10000 > /dev/null  109.70s user 2.96s system  97% cpu 1:55.92 total
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     env_logger::init();
     debug!("This is test output from debug!");
     error!("{}", "This is test output from error!");
