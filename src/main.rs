@@ -1,6 +1,5 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::io;
 
 use log::debug;
 use log::error;
