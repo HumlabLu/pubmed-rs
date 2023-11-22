@@ -90,12 +90,12 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>> {
 fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     env_logger::init();
     debug!("This is test output from debug!");
-    error!("{}", "This is test output from error!");
+    //error!("{}", "This is test output from error!");
     info!("{:?}", "This is test output from info!");
     warn!("{:#?}", "This is test output from warn!");
     
     let args = Args::parse();
-
+    
     // Check if dirname is not none first.
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
@@ -107,7 +107,9 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                         Ok(texts) => {
                             output(file.file_name().unwrap().to_str().unwrap(), texts);
                         },
-                        Err(e) => println!("Error reading or parsing JSON: {}", e),
+                        Err(e) => error!("Error reading or parsing {}: {}",
+                            file.file_name().unwrap().to_str().unwrap(),
+                            e),
                     }
 
                     if false {
@@ -121,13 +123,13 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                                     println!("---"); // Separator for different sections
                                 }
                             }
-                            Err(e) => eprintln!("Error: {}", e),
+                            Err(e) => error!("Error: {}", e),
                         }
                     }
                     
                 });
             }
-            Err(e) => eprintln!("Failed to read directory: {}", e),
+            Err(e) => error!("Failed to read directory: {}", e),
         }
     }
 
