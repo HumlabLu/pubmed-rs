@@ -1,6 +1,3 @@
-use std::fs::File;
-use std::io::BufReader;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::io;
@@ -85,18 +82,18 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
 // cargo run -- -d ~/Downloads/PMC010xxxxxx -m 10000 > /dev/null  109.70s user 2.96s system  97% cpu 1:55.92 total
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
-    /*debug!("Mary has a little lamb");
-    error!("{}", "Its fleece was white as snow");
-    info!("{:?}", "And every where that Mary went");
-    warn!("{:#?}", "The lamb was sure to go");*/
+    debug!("This is test output from debug!");
+    error!("{}", "This is test output from error!");
+    info!("{:?}", "This is test output from info!");
+    warn!("{:#?}", "This is test output from warn!");
     
     let args = Args::parse();
 
     // Check if dirname is not none first.
     if args.dirname.is_some() {
-        let mut dirfiles = get_files_in_directory(args.dirname.unwrap());
+        let dirfiles = get_files_in_directory(args.dirname.unwrap());
         match dirfiles {
-            Ok(mut files) => {
+            Ok(files) => {
                 // iter(), par_iter() {
                 files.par_iter().for_each(|file| {
                     match extract_text_from_json(file) {
@@ -185,7 +182,7 @@ fn output(filename: &str, texts: BTreeMap<String, String>) {
 // roxmltree
 // ================================================================
 
-fn extract_text_from_sec_tags(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+fn _extract_text_from_sec_tags(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let xml_content = fs::read_to_string(file_path)?;
     let doc = Document::parse(&xml_content)?;
 
@@ -199,7 +196,7 @@ fn extract_text_from_sec_tags(file_path: &str) -> Result<Vec<String>, Box<dyn st
     Ok(texts)
 }
 
-fn extract_text_from_p_tags_in_sec(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+fn _extract_text_from_p_tags_in_sec(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let xml_content = fs::read_to_string(file_path)?;
     let doc = Document::parse(&xml_content)?;
 

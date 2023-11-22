@@ -1,7 +1,6 @@
 use std::fs;
-use std::error::Error;
-use serde_json::{Value, from_str};
-use std::path::{Path, PathBuf};
+use serde_json::Value;
+use std::path::Path;
 
 use std::collections::BTreeMap;
 
@@ -22,12 +21,13 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
 
     let remove_re = Regex::new(r"\n\d{1,2}").unwrap();
     let remove_re1 = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap();
-    
-
     // “ ”
+    //  [1, 2]
+    // (Golden, 2020) or (Zimmerman & Curtis, 2020)
+    
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
-            let mut clean_text = String::from(text);
+            let clean_text = String::from(text);
             // A new one (assuming they are in order)...
             if current_section != format!("{:02}:{}", section_number, clean_text.clone()) { 
                 section_number += 1;
@@ -36,7 +36,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
         }
         // store as datat[section] += clean_text or something.
         if let Some(text) = entry["text"].as_str() {
-            let mut clean_text = String::from(text);
+            let clean_text = String::from(text);
 
             // Quick fix for "\n1" type of refs.
             let clean_text = remove_re.replace_all(&clean_text, "");
@@ -46,10 +46,11 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
                 if let Some(cite_spans) = entry["cite_spans"].as_array() {
                     for cite_span in cite_spans.iter().rev() {
                         println!("{:?}", cite_span);
-                        if let (Some(start), Some(end)) = (cite_span["start"].as_i64(), cite_span["end"].as_i64()) {
-                            // This affect the positions after... utf-8 gives wrong spans?
+                        /*if let (Some(start), Some(end)) = (cite_span["start"].as_i64(), cite_span["end"].as_i64()) {
+                            // Does utf-8 give wrong spans?
+                            // We cannot run this after the regexen.
                             //clean_text.replace_range(start as usize..=end as usize, "");
-                        }
+                        }*/
                     }
                 }
             }
