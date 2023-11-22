@@ -43,6 +43,10 @@ struct Args {
     /// Include the file names in the output.
     #[arg(long, action)]
     filenames: bool,
+
+    /// Remove some stuff with regular expressions.
+    #[arg(short, long, action)]
+    remove: bool,
 }
 
 // With trait bounds.
