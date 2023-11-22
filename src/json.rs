@@ -4,7 +4,6 @@ use std::path::Path;
 
 use std::collections::BTreeMap;
 
-//extern crate regex;
 use regex::Regex;
 
 use crate::Args;
@@ -28,10 +27,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+[a-z]?(?:,\s*[a-z])?\)").unwrap();
     //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+(?:[a-z](?:,\s*[a-z])?)?\)").unwrap();
     let remove_parens = Regex::new(r"\([^)]*\)").unwrap();
-    // “ ”
-    //  [1, 2]
-    // (Golden, 2020) or (Zimmerman & Curtis, 2020)
-    // (Fig. 3)
+
     let args = Args::parse();
     
     for entry in body_text {
@@ -56,7 +52,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
                 clean_text = remove_parens.replace_all(&clean_text, "").into_owned();
             }
             
-            if false {
+            if false { // Didn't really work as expected...
                 if let Some(cite_spans) = entry["cite_spans"].as_array() {
                     for cite_span in cite_spans.iter().rev() {
                         println!("{:?}", cite_span);
@@ -69,18 +65,9 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
                 }
             }
             
-            
             fulltext.entry(current_section.clone()).or_insert_with(String::new).push_str(&clean_text);             
         }
     }
-
-    //let _: () = fulltext; // BTreeMap<String, String>
-    //println!("{:?}", fulltext);
-    
-    // Iterate over everything.
-    /*for (section, text) in &fulltext {
-        println!("{section}");
-    }*/
     
     Ok(fulltext)
 }
