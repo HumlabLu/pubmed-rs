@@ -45,6 +45,7 @@ struct Args {
     filenames: bool,
 }
 
+// With trait bounds.
 fn get_files_in_directory<P: AsRef<Path>>(path: P) -> io::Result<Vec<PathBuf>> {
     let mut file_paths = Vec::new();
 
@@ -162,16 +163,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn output(filename: &str, texts: BTreeMap<String, String>) {
     let args = Args::parse();
 
-    if args.filenames == true {
-        println!("-- {:?}", filename);
-    }
     if texts.len() > 2 {
         for (section, text) in &texts {
-            if args.sectionnames == true {
-                println!("({section}) {text}");
-            } else {
-                println!("{text}");
+            if args.filenames == true {
+                print!("{:?}\t", filename);
             }
+            if args.sectionnames == true {
+                print!("{section}\t");
+            }
+            println!("{text}");
         }
     } else {
         info!("Only {} sections.", texts.len());
