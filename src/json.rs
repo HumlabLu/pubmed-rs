@@ -19,11 +19,12 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     let mut current_section = String::from("UNKNOWN");
     let mut section_number = 0usize;
 
-    let remove_re = Regex::new(r"\n\d{1,2}").unwrap();
-    let remove_re1 = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap();
+    let remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
+    let remove_latex = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap();
     // “ ”
     //  [1, 2]
     // (Golden, 2020) or (Zimmerman & Curtis, 2020)
+    // (Fig. 3)
     
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
@@ -39,8 +40,8 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
             let clean_text = String::from(text);
 
             // Quick fix for "\n1" type of refs.
-            let clean_text = remove_re.replace_all(&clean_text, "");
-            let clean_text = remove_re1.replace_all(&clean_text, " REGEX ");
+            let clean_text = remove_simpleref.replace_all(&clean_text, "");
+            let clean_text = remove_latex.replace_all(&clean_text, "");
             
             if false {
                 if let Some(cite_spans) = entry["cite_spans"].as_array() {

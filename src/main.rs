@@ -180,6 +180,7 @@ fn output(filename: &str, texts: BTreeMap<String, String>) {
 
 // ================================================================
 // roxmltree
+// Unused after switch to JSON.
 // ================================================================
 
 fn _extract_text_from_sec_tags(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
