@@ -134,13 +134,12 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
-        info!("FILE {path_name}");
 
         match extract_text_from_json(path_name.clone()) {
             Ok(texts) => {
                 output(&path_name, texts);
             },
-            Err(e) => println!("Error reading or parsing JSON: {}", e),
+            Err(e) => error!("Error reading or parsing JSON: {}", e),
         }
 
         if false {
@@ -154,7 +153,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                         println!("---"); // Separator for different sections.
                     }
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => error!("Error: {}", e),
             }
         }
         
