@@ -171,10 +171,10 @@ fn output(filename: &str, texts: BTreeMap<String, String>) {
 
     if texts.len() > 2 {
         for (section, text) in &texts {
-            if args.filenames == true {
+            if args.filenames {
                 print!("{:?}\t", filename);
             }
-            if args.sectionnames == true {
+            if args.sectionnames {
                 print!("{section}\t");
             }
             println!("{text}");
