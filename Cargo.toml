@@ -2,6 +2,9 @@
 name = "pubmed-rs"
 version = "0.1.0"
 edition = "2021"
+authors = ["Peter Berck <peter.berck@humlab.lu.se>"]
+description = "Parses the JSON files of the COVID-19 article data set."
+repository = "https://github.com/HumLabLu/pubmed-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

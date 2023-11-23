@@ -13,7 +13,6 @@ use anyhow::{Context, Result};
 
 // ===========================================================================
 
-//pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>, Box<dyn std::error::Error>> {
 pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
     let data = fs::read_to_string(file_path)?;
     let json: Value = serde_json::from_str(&data)?;
@@ -37,7 +36,8 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
             let clean_text = String::from(text);
-            // A new one (assuming they are in order)...
+            // A new section (assuming they are in order)?
+            // Prepend a number so they can be sorted later.
             if current_section != format!("{:02}:{}", section_number, clean_text.clone()) { 
                 section_number += 1;
                 current_section = format!("{:02}:{}", section_number, clean_text.clone());
