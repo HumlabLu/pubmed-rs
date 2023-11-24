@@ -33,7 +33,7 @@ struct Args {
     #[arg(short, long)]
     dirname: Option<String>,
 
-    /// Maximum number of files to process.
+    /// If specified, maximum number of files to process from directory.
     #[arg(short, long)]
     maxfiles: Option<usize>,
 
@@ -45,7 +45,7 @@ struct Args {
     #[arg(long, action)]
     filenames: bool,
 
-    /// Remove some stuff with regular expressions.
+    /// Remove some stuff with hard-coded regular expressions.
     #[arg(short, long, action)]
     remove: bool,
 }
@@ -66,11 +66,13 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>> {
         if path.is_file() {
             if let Some(ext) = path.extension() {
                 if ext == "xml" || ext == "json" {
+                    debug!("Added {:?} to file list.", path);
                     file_paths.push(path);
                     
                     if counter > 0 {
                         counter -= 1;
                         if counter == 0 {
+                            debug!("Reached file limit.");
                             break;
                         }
                     }
@@ -92,7 +94,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     //error!("{}", "This is test output from error!");
     info!("{:?}", "This is test output from info!");
     warn!("{:#?}", "This is test output from warn!");
-    
+
     let args = Args::parse();
     
     // Check if dirname is not none first.
@@ -102,9 +104,11 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
             Ok(files) => {
                 // iter(), par_iter() {
                 files.par_iter().for_each(|file| {
+                    debug!("Starting {}.", file.file_name().unwrap().to_str().unwrap());
                     match extract_text_from_json(file) {
                         Ok(texts) => {
                             output(file.file_name().unwrap().to_str().unwrap(), texts);
+                            debug!("Output {} ok.", file.file_name().unwrap().to_str().unwrap());
                         },
                         Err(e) => error!("Error reading or parsing {}: {}",
                             file.file_name().unwrap().to_str().unwrap(),
