@@ -25,7 +25,7 @@ use anyhow::Result;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Filename of the XML file to parse.
+    /// Filename of the JSON file to parse.
     #[arg(short, long)]
     filename: Option<String>,
 

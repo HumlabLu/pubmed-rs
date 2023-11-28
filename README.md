@@ -12,7 +12,7 @@ Output is written to standard out.
 Usage: pubmed-rs [OPTIONS]
 
 Options:
-  -f, --filename <FILENAME>  Filename of the XML file to parse
+  -f, --filename <FILENAME>  Filename of the JSON file to parse
   -d, --dirname <DIRNAME>    Directory name
   -j, --json                 Output JSON instead of plain text
   -m, --maxfiles <MAXFILES>  If specified, maximum number of files to process from directory
