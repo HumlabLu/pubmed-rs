@@ -14,10 +14,11 @@ Usage: pubmed-rs [OPTIONS]
 Options:
   -f, --filename <FILENAME>  Filename of the XML file to parse
   -d, --dirname <DIRNAME>    Directory name
-  -m, --maxfiles <MAXFILES>  Maximum number of files to process
+  -j, --json                 Output JSON instead of plain text
+  -m, --maxfiles <MAXFILES>  If specified, maximum number of files to process from directory
   -s, --sectionnames         Include the section names in the output
       --filenames            Include the file names in the output
-  -r, --remove               Remove some stuff with regular expressions
+  -r, --remove               Remove some stuff with hard-coded regular expressions
 ```
 
 ## Examples
