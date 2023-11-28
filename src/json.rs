@@ -1,5 +1,6 @@
 use std::fs;
 use serde_json::Value;
+use serde_json::json;
 use std::path::Path;
 
 use std::collections::BTreeMap;
@@ -75,5 +76,40 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     }
     
     Ok(fulltext)
+}
+
+
+/*
+{
+  "2303949": {
+    "title": "Excursion of the flexor digitorum profundus tendon: ...",
+    "abstract": "The most common problem following ...",
+    "mesh_terms": "D000818:Animals; D004285:Dogs; D005385:Fingers; D006801:Humans; D007596:Joints; D008662:Metacarpophalangeal Joint; D008663:Metac
+arpus; D009068:Movement; D013710:Tendons",
+    "pubdate": "1990-03",
+    "chemical_list": ""
+    },
+
+
+72803	{'text': 'A combined familial study of multiple sclerosis (MS) in England and in the Rostock area of the GDR using the macrophage electrophoretic mobility (MEM)-LAD test embracing 132 relatives has revealed a closely similar pattern of distribution of "anomalous" LAD (Linoleic Acid Depression) values in relatives (77% type of reaction) to that originally reported in the British study.', 'entities': {'disease': ['multiple sclerosis', 'ms', 'acid depression'], 'chemical': ['linoleic acid']}, 'entity_spans': {'disease': [[29, 47], [49, 51], [268, 283]], 'chemical': [[259, 272]]}}
+*/
+pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
+
+    let mut sections = vec![];
+    
+    for (section, text) in &texts {
+        let sect = json!({
+            "text": text,
+        });    
+        //println!("JSON {}", sect);
+        sections.push(sect);
+    }
+
+    // Create a top level struct.
+    let doc = json!({
+        "filename": filename,
+        "sections": sections,
+    });
+    println!("{}", doc);
 }
 

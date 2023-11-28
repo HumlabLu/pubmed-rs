@@ -12,7 +12,7 @@ use roxmltree::Document;
 use rayon::prelude::*;
 
 mod json;
-use json::extract_text_from_json;
+use json::{extract_text_from_json, output_json};
 
 use std::collections::BTreeMap;
 
@@ -32,6 +32,10 @@ struct Args {
     /// Directory name.
     #[arg(short, long)]
     dirname: Option<String>,
+
+    /// Output JSON instead of plain text.
+    #[arg(short, long, action)]
+    json: bool,
 
     /// If specified, maximum number of files to process from directory.
     #[arg(short, long)]
@@ -104,8 +108,13 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                     debug!("Starting {}.", file.file_name().unwrap().to_str().unwrap());
                     match extract_text_from_json(file) {
                         Ok(texts) => {
-                            output(file.file_name().unwrap().to_str().unwrap(), texts);
-                            debug!("Output {} ok.", file.file_name().unwrap().to_str().unwrap());
+                            let filename = file.file_name().unwrap().to_str().unwrap();
+                            if args.json {
+                                output_json(filename, texts);
+                            } else {
+                                output(filename, texts);
+                            }
+                            debug!("Output {} ok.", filename);
                         },
                         Err(e) => error!("Error reading or parsing {}: {}",
                             file.file_name().unwrap().to_str().unwrap(),
@@ -138,7 +147,11 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
         match extract_text_from_json(path_name.clone()) {
             Ok(texts) => {
-                output(&path_name, texts);
+                if args.json {
+                    output_json(&path_name, texts);
+                } else {
+                    output(&path_name, texts);
+                }
             },
             Err(e) => error!("Error reading or parsing JSON: {}", e),
         }
