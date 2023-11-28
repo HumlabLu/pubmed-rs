@@ -25,5 +25,5 @@ Options:
 
 ```
 cargo run --release -- -f PMC7405720.xml.json > out.txt
-cargo run --release -- -d ./pmc_json/ -r -s -f
+cargo run --release -- -d ./pmc_json/ -r -s --filenames
 ```
