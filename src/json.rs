@@ -96,11 +96,19 @@ arpus; D009068:Movement; D013710:Tendons",
 pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
 
     let mut sections = vec![];
+    let args = Args::parse();
     
     for (section, text) in &texts {
-        let sect = json!({
-            "text": text,
-        });    
+        let sect = if args.sectionnames {
+            json!({
+                "section": section,
+                "text": text,
+            })
+        } else {
+            json!({
+                "text": text,
+            })
+        };
         //println!("JSON {}", sect);
         sections.push(sect);
     }
