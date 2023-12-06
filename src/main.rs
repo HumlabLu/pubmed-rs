@@ -12,7 +12,7 @@ use roxmltree::Document;
 use rayon::prelude::*;
 
 mod json;
-use json::{extract_text_from_json, output_json};
+use json::{extract_text_from_json, output_json, remove_section_no};
 
 use std::collections::BTreeMap;
 
@@ -120,21 +120,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                             file.file_name().unwrap().to_str().unwrap(),
                             e),
                     }
-
-                    if false {
-                        match extract_text_from_sec(file) {
-                            Ok(sections) => {
-                                for (title, texts) in sections {
-                                    println!("{:?} Title: {}", file, title);
-                                    for text in texts {
-                                        println!("{:?} Text: {}", file, text);
-                                    }
-                                    println!("---"); // Separator for different sections
-                                }
-                            }
-                            Err(e) => error!("Error: {}", e),
-                        }
-                    }
                     
                 });
             }
@@ -155,21 +140,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
             },
             Err(e) => error!("Error reading or parsing JSON: {}", e),
         }
-
-        if false {
-            match extract_text_from_sec(path_name) {
-                Ok(sections) => {
-                    for (title, texts) in sections {
-                        println!("Title: {}", title);
-                        for text in texts {
-                            println!("Text: {}", text);
-                        }
-                        println!("---"); // Separator for different sections.
-                    }
-                }
-                Err(e) => error!("Error: {}", e),
-            }
-        }
         
     }
     
@@ -189,7 +159,7 @@ fn output(filename: &str, texts: BTreeMap<String, String>) {
                 print!("{:?}\t", filename);
             }
             if args.sectionnames {
-                print!("{section}\t");
+                print!("{}\t", remove_section_no(section));
             }
             println!("{text}");
         }

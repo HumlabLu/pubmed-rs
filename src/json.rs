@@ -29,8 +29,10 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     let remove_figs = Regex::new(r"\(Fig(?:ure|\.)? \d+[a-z]?\)").unwrap();
     //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+[a-z]?(?:,\s*[a-z])?\)").unwrap();
     //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+(?:[a-z](?:,\s*[a-z])?)?\)").unwrap();
-    let remove_parens = Regex::new(r"\([^)]*\)").unwrap();
-    let remove_square = Regex::new(r"\[\d+\]").unwrap();
+    ////let remove_parens = Regex::new(r"\([^)]*\)").unwrap(); // Takes too much...
+    let remove_parens = Regex::new(r"\([^)]{1,10}\)").unwrap();
+    let remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
+    //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
     
     let args = Args::parse();
     
@@ -42,7 +44,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
             if current_section != format!("{:02}:{}", section_number, clean_text.clone()) { 
                 section_number += 1;
                 current_section = format!("{:02}:{}", section_number, clean_text.clone());
-            }            
+            }
         }
         // store as datat[section] += clean_text or something.
         if let Some(text) = entry["text"].as_str() {
@@ -57,20 +59,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
                 clean_text = remove_parens.replace_all(&clean_text, "").into_owned();
                 clean_text = remove_square.replace_all(&clean_text, "").into_owned();
             }
-            
-            if false { // Didn't really work as expected...
-                if let Some(cite_spans) = entry["cite_spans"].as_array() {
-                    for cite_span in cite_spans.iter().rev() {
-                        println!("{:?}", cite_span);
-                        /*if let (Some(start), Some(end)) = (cite_span["start"].as_i64(), cite_span["end"].as_i64()) {
-                            // Does utf-8 give wrong spans?
-                            // We cannot run this after the regexen.
-                            //clean_text.replace_range(start as usize..=end as usize, "");
-                        }*/
-                    }
-                }
-            }
-            
+                        
             fulltext.entry(current_section.clone()).or_insert_with(String::new).push_str(&clean_text);             
         }
     }
@@ -78,6 +67,14 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     Ok(fulltext)
 }
 
+// Remove the "NN:" prefix from the String.
+pub fn remove_section_no(section: &String) -> String {
+    if section.len() > 3 {
+        section.chars().skip(3).collect()
+    } else {
+        String::new()
+    }
+}
 
 /*
 {
@@ -101,7 +98,7 @@ pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
     for (section, text) in &texts {
         let sect = if args.sectionnames {
             json!({
-                "section": section,
+                "section": remove_section_no(section),
                 "text": text,
             })
         } else {
