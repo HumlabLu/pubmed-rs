@@ -35,7 +35,8 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
     
     let args = Args::parse();
-    
+
+    let mut sep = "";
     for entry in body_text {
         if let Some(text) = entry["section"].as_str() {
             let clean_text = String::from(text);
@@ -43,6 +44,7 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
             // Prepend a number so they can be sorted later.
             if current_section != format!("{:02}:{}", section_number, clean_text.clone()) { 
                 section_number += 1;
+                sep = "";
                 current_section = format!("{:02}:{}", section_number, clean_text.clone());
             }
         }
@@ -59,8 +61,10 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
                 clean_text = remove_parens.replace_all(&clean_text, "").into_owned();
                 clean_text = remove_square.replace_all(&clean_text, "").into_owned();
             }
-                        
-            fulltext.entry(current_section.clone()).or_insert_with(String::new).push_str(&clean_text);             
+            clean_text = sep.to_owned() + &clean_text;
+            sep = " ";
+
+            fulltext.entry(current_section.clone()).or_insert_with(String::new).push_str(&clean_text);
         }
     }
     
@@ -94,7 +98,7 @@ pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
 
     let mut sections = vec![];
     let args = Args::parse();
-    
+
     for (section, text) in &texts {
         let sect = if args.sectionnames {
             json!({

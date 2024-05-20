@@ -124,6 +124,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
         }
     }
 
+    // We supplied a single filename.
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
 
