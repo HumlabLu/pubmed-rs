@@ -91,14 +91,11 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>> {
 // cargo run -- -d ~/Downloads/PMC010xxxxxx -m 10000 > /dev/null  109.70s user 2.96s system  97% cpu 1:55.92 total
 fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     env_logger::init();
-    debug!("This is test output from debug!");
-    //error!("{}", "This is test output from error!");
-    info!("{:?}", "This is test output from info!");
-    warn!("{:#?}", "This is test output from warn!");
 
     let args = Args::parse();
     
-    // Check if dirname is not none first.
+    // Check if dirname is not none first. If it exists, we parse all the
+    // files in the directory.
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
         match dirfiles {
