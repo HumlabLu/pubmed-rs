@@ -18,8 +18,11 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     let data = fs::read_to_string(file_path)?;
     let json: Value = serde_json::from_str(&data)?;
 
-    let body_text = json["body_text"].as_array().context("Invalid format for 'body_text'")?;
+    //dbg!("{:?}", &json);
 
+    // body_text is the COVID-19 data, the newer ones have passages/text etc.
+    let body_text = json["body_text"].as_array().context("Invalid format for 'body_text'")?;
+    
     let mut fulltext = BTreeMap::new(); // This one is sorted.
     let mut current_section = String::from("UNKNOWN");
     let mut section_number = 0usize;
@@ -71,6 +74,81 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
     Ok(fulltext)
 }
 
+// -------------------------------------------------------------------
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Infons {
+    #[serde(flatten)]
+    extra: std::collections::HashMap<String, String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Passage {
+    offset: u32,
+    infons: Infons,
+    text: String,
+    sentences: Vec<serde_json::Value>,
+    annotations: Vec<serde_json::Value>,
+    relations: Vec<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Document {
+    id: String,
+    infons: Infons,
+    passages: Vec<Passage>,
+    annotations: Vec<serde_json::Value>,
+    relations: Vec<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Root {
+    source: String,
+    date: String,
+    key: String,
+    infons: Infons,
+    documents: Vec<Document>,
+}
+
+pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
+    let data = fs::read_to_string(file_path)?;
+
+    //let json: Value = serde_json::from_str(&data)?;
+
+    let root: Root = serde_json::from_str(&data).expect("JSON was not well-formatted");
+
+    for document in root.documents {
+        for passage in document.passages {
+            println!("{}", passage.text);
+        }
+    }
+
+    
+    let mut fulltext = BTreeMap::new(); // This one is sorted.
+    let mut current_section = String::from("UNKNOWN");
+    let mut section_number = 0usize;
+
+    let remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
+    let remove_latex = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap(); // (?s) = multi-line
+    let remove_figs = Regex::new(r"\(Fig(?:ure|\.)? \d+[a-z]?\)").unwrap();
+    //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+[a-z]?(?:,\s*[a-z])?\)").unwrap();
+    //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+(?:[a-z](?:,\s*[a-z])?)?\)").unwrap();
+    ////let remove_parens = Regex::new(r"\([^)]*\)").unwrap(); // Takes too much...
+    let remove_parens = Regex::new(r"\([^)]{1,10}\)").unwrap();
+    let remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
+    //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
+    
+    let args = Args::parse();
+
+    
+    Ok(fulltext)
+}
+
+// ----------------------------------------------------------------------------
+
+
 // Remove the "NN:" prefix from the String.
 pub fn remove_section_no(section: &String) -> String {
     if section.len() > 3 {
@@ -80,20 +158,6 @@ pub fn remove_section_no(section: &String) -> String {
     }
 }
 
-/*
-{
-  "2303949": {
-    "title": "Excursion of the flexor digitorum profundus tendon: ...",
-    "abstract": "The most common problem following ...",
-    "mesh_terms": "D000818:Animals; D004285:Dogs; D005385:Fingers; D006801:Humans; D007596:Joints; D008662:Metacarpophalangeal Joint; D008663:Metac
-arpus; D009068:Movement; D013710:Tendons",
-    "pubdate": "1990-03",
-    "chemical_list": ""
-    },
-
-
-72803	{'text': 'A combined familial study of multiple sclerosis (MS) in England and in the Rostock area of the GDR using the macrophage electrophoretic mobility (MEM)-LAD test embracing 132 relatives has revealed a closely similar pattern of distribution of "anomalous" LAD (Linoleic Acid Depression) values in relatives (77% type of reaction) to that originally reported in the British study.', 'entities': {'disease': ['multiple sclerosis', 'ms', 'acid depression'], 'chemical': ['linoleic acid']}, 'entity_spans': {'disease': [[29, 47], [49, 51], [268, 283]], 'chemical': [[259, 272]]}}
-*/
 pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
 
     let mut sections = vec![];

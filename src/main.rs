@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 use log::debug;
 use log::error;
 use log::info;
-use log::warn;
 
 use clap::Parser;
 
@@ -12,7 +11,7 @@ use roxmltree::Document;
 use rayon::prelude::*;
 
 mod json;
-use json::{extract_text_from_json, output_json, remove_section_no};
+use json::{extract_text_from_json, extract_text_from_json_2, output_json, remove_section_no};
 
 use std::collections::BTreeMap;
 
@@ -128,7 +127,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
 
-        match extract_text_from_json(path_name.clone()) {
+        match extract_text_from_json_2(path_name.clone()) {
             Ok(texts) => {
                 if args.json {
                     output_json(&path_name, texts);
@@ -212,6 +211,7 @@ fn _extract_text_from_p_tags_in_sec(file_path: &str) -> Result<Vec<String>, Box<
     Ok(texts)
 }
 
+#[allow(dead_code)]
 fn extract_text_from_sec<P: AsRef<Path>>(file_path: P) -> Result<Vec<(String, Vec<String>)>, Box<dyn std::error::Error>> {
     let xml_content = fs::read_to_string(file_path)?;
     let doc = Document::parse(&xml_content)?;
