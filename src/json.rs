@@ -148,21 +148,21 @@ struct OutputArticle {
 }
 
 
-pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
+pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
     let data = fs::read_to_string(file_path)?;
 
     //let json: Value = serde_json::from_str(&data)?;
     let root: Root = serde_json::from_str(&data).expect("JSON was not well-formatted");
     //dbg!("{:?}", &root);
+
+    // Test output JSON
+    let mut od = OutputArticle { // OutputDocument?
+        paragraphs: vec![],
+        abbreviations: HashMap::new(),
+    };
     
     for document in root.documents {
         println!("{}", document.id);
-
-        // Test output JSON
-        let mut od = OutputArticle { // OutputDocument?
-            paragraphs: vec![],
-            abbreviations: HashMap::new(),
-        };
         
         let mut abbr_count = 0;
         let mut abbr: Option<String> = None;
@@ -183,12 +183,11 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
                 }
             // Alternating abbreviation-meaning.
             if (section_type == "ABBR") && (the_type == "paragraph") {
-                if abbr_count % 2 == 0 {
+                if abbr_count % 2 == 0 { // Or None/Some(abbr)?
                     print!("ABBR {}\t", passage.text);
                     abbr = Some(passage.text);
                 } else {
                     println!("{}", passage.text);
-                    //full = Some(passage.text);
                     od.abbreviations.insert(abbr.clone().unwrap(), passage.text);
                     abbr = None;
                 }
@@ -213,10 +212,6 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
         dbg!("{}", js);
     }
     
-    let mut fulltext = BTreeMap::new(); // This one is sorted.
-    let mut current_section = String::from("UNKNOWN");
-    let mut section_number = 0usize;
-
     let remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
     let remove_latex = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap(); // (?s) = multi-line
     let remove_figs = Regex::new(r"\(Fig(?:ure|\.)? \d+[a-z]?\)").unwrap();
@@ -229,8 +224,8 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
     
     let args = Args::parse();
 
-    
-    Ok(fulltext)
+    let js = serde_json::to_value(&od).unwrap();
+    Ok(js)
 }
 
 // ----------------------------------------------------------------------------
