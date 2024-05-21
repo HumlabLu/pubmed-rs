@@ -143,7 +143,8 @@ struct OutputParagraph {
 
 #[derive(Deserialize, Serialize)]
 struct OutputArticle {
-    paragraphs: Vec<OutputParagraph>
+    paragraphs: Vec<OutputParagraph>,
+    abbreviations: HashMap<String, String>,
 }
 
 
@@ -159,10 +160,13 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
 
         // Test output JSON
         let mut od = OutputArticle { // OutputDocument?
-            paragraphs: vec![]
+            paragraphs: vec![],
+            abbreviations: HashMap::new(),
         };
         
         let mut abbr_count = 0;
+        let mut abbr: Option<String> = None;
+
         for passage in document.passages {
             //dbg!("{:?}", &passage);
             let section_type = &passage.infons["section_type"];
@@ -181,8 +185,12 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
             if (section_type == "ABBR") && (the_type == "paragraph") {
                 if abbr_count % 2 == 0 {
                     print!("ABBR {}\t", passage.text);
+                    abbr = Some(passage.text);
                 } else {
                     println!("{}", passage.text);
+                    //full = Some(passage.text);
+                    od.abbreviations.insert(abbr.clone().unwrap(), passage.text);
+                    abbr = None;
                 }
                 abbr_count += 1;
                 continue;
