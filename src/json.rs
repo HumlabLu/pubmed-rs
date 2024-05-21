@@ -132,6 +132,21 @@ struct Relation {
     the_type: String
 }
 
+/*
+    Output JSON.
+*/
+#[derive(Deserialize, Serialize)]
+struct OutputParagraph {
+    the_type: String,
+    text: String,
+}
+
+#[derive(Deserialize, Serialize)]
+struct OutputArticle {
+    paragraphs: Vec<OutputParagraph>
+}
+
+
 pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
     let data = fs::read_to_string(file_path)?;
 
@@ -142,6 +157,11 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
     for document in root.documents {
         println!("{}", document.id);
 
+        // Test output JSON
+        let mut od = OutputArticle { // OutputDocument?
+            paragraphs: vec![]
+        };
+        
         let mut abbr_count = 0;
         for passage in document.passages {
             //dbg!("{:?}", &passage);
@@ -168,10 +188,21 @@ pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap
                 continue;
             }
             //println!("{:?}", passage.infons);
-            if the_type == "paragraph" {
+            if the_type == "paragraph" || the_type == "abstract" {
                 println!("{} {}\n", section_type, passage.text);
+
+                // Create a JSON paragraph.
+                let op = OutputParagraph {
+                    the_type: section_type.to_string(),
+                    text: passage.text
+                };
+                //let js = serde_json::to_value(&op).unwrap();
+                //dbg!("{}", js);
+                od.paragraphs.push(op);
             }
-        }
+        } // passages
+        let js = serde_json::to_value(&od).unwrap();
+        dbg!("{}", js);
     }
     
     let mut fulltext = BTreeMap::new(); // This one is sorted.
