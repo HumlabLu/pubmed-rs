@@ -102,7 +102,8 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                 // iter(), par_iter() {
                 files.par_iter().for_each(|file| {
                     debug!("Starting {}.", file.file_name().unwrap().to_str().unwrap());
-                    match extract_text_from_json(file) {
+                    println!("Starting {}.", file.file_name().unwrap().to_str().unwrap());
+                    match extract_text_from_json_2(file) {
                         Ok(texts) => {
                             let filename = file.file_name().unwrap().to_str().unwrap();
                             if args.json {

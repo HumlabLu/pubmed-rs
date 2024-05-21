@@ -1,9 +1,12 @@
 use std::fs;
 use serde_json::Value;
 use serde_json::json;
+use serde::{Deserialize, Serialize};
+
 use std::path::Path;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use regex::Regex;
 
@@ -76,55 +79,100 @@ pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<S
 
 // -------------------------------------------------------------------
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Infons {
-    #[serde(flatten)]
-    extra: std::collections::HashMap<String, String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Passage {
-    offset: u32,
-    infons: Infons,
-    text: String,
-    sentences: Vec<serde_json::Value>,
-    annotations: Vec<serde_json::Value>,
-    relations: Vec<serde_json::Value>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Document {
-    id: String,
-    infons: Infons,
-    passages: Vec<Passage>,
-    annotations: Vec<serde_json::Value>,
-    relations: Vec<serde_json::Value>,
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Root {
     source: String,
     date: String,
     key: String,
-    infons: Infons,
+    infons: HashMap<String, String>,
     documents: Vec<Document>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Document {
+    id: String,
+    infons: HashMap<String, String>,
+    passages: Vec<Passage>,
+    annotations: Vec<Annotation>,
+    relations: Vec<Relation>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Passage {
+    offset: u32,
+    infons: HashMap<String, String>,
+    text: String,
+    sentences: Vec<Sentence>,
+    annotations: Vec<Annotation>,
+    relations: Vec<Relation>,
+}
+
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Sentence {
+    // Define fields based on the structure of sentences in your JSON
+    // For example, if sentences contain only text:
+    text: String
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Annotation {
+    // Define fields based on the structure of annotations in your JSON
+    // For example, if annotations contain an id and type:
+    // id: String,
+    the_type: String
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Relation {
+    // Define fields based on the structure of relations in your JSON
+    // For example, if relations contain an id and type:
+    // id: String,
+    the_type: String
 }
 
 pub fn extract_text_from_json_2<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
     let data = fs::read_to_string(file_path)?;
 
     //let json: Value = serde_json::from_str(&data)?;
-
     let root: Root = serde_json::from_str(&data).expect("JSON was not well-formatted");
-
+    //dbg!("{:?}", &root);
+    
     for document in root.documents {
+        println!("{}", document.id);
+
+        let mut abbr_count = 0;
         for passage in document.passages {
-            println!("{}", passage.text);
+            //dbg!("{:?}", &passage);
+            let section_type = &passage.infons["section_type"];
+            let the_type = &passage.infons["type"];
+            if (section_type == "REF")
+                || (section_type == "FIG")
+                || (section_type == "TABLE")
+                || (section_type == "APPENDIX")
+                || (section_type == "COMP_INT")
+                || (section_type == "METHODS")
+                || (section_type == "AUTH_CONT")
+                || (section_type == "REVIEW_INFO") {
+                    continue;
+                }
+            // Alternating abbreviation-meaning.
+            if (section_type == "ABBR") && (the_type == "paragraph") {
+                if abbr_count % 2 == 0 {
+                    print!("ABBR {}\t", passage.text);
+                } else {
+                    println!("{}", passage.text);
+                }
+                abbr_count += 1;
+                continue;
+            }
+            //println!("{:?}", passage.infons);
+            if the_type == "paragraph" {
+                println!("{} {}\n", section_type, passage.text);
+            }
         }
     }
-
     
     let mut fulltext = BTreeMap::new(); // This one is sorted.
     let mut current_section = String::from("UNKNOWN");
