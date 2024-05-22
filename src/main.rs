@@ -11,6 +11,7 @@ use rayon::prelude::*;
 
 mod json;
 use json::{extract_json_from_json, output_json, remove_section_no};
+use serde_json::Value;
 
 use std::collections::BTreeMap;
 
@@ -99,18 +100,16 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
         match dirfiles {
             Ok(files) => {
                 // iter(), par_iter() {
-                files.par_iter().for_each(|file| {
+                files.par_iter().for_each(|file| { // Note that the order is unknown.
                     debug!("Starting {}.", file.file_name().unwrap().to_str().unwrap());
                     match extract_json_from_json(file) {
                         Ok(texts) => {
                             let filename = file.file_name().unwrap().to_str().unwrap();
-                            /*
                             if args.json {
                                 output_json(filename, texts);
                             } else {
                                 output(filename, texts);
                             }
-                            */
                             debug!("Output {} ok.", filename);
                         },
                         Err(e) => error!("Error reading or parsing {}: {}",
@@ -130,13 +129,11 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
         match extract_json_from_json(path_name.clone()) {
             Ok(texts) => {
-                /*
                 if args.json {
                     output_json(&path_name, texts);
                 } else {
                     output(&path_name, texts);
                 }
-                */
             },
             Err(e) => error!("Error reading or parsing JSON: {}", e),
         }
@@ -150,9 +147,11 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // Output
 // ================================================================
 
-fn output(filename: &str, texts: BTreeMap<String, String>) {
+fn output(filename: &str, texts: Value) {
     let args = Args::parse();
 
+    println!("{}", texts);
+    /*
     if texts.len() > 2 {
         for (section, text) in &texts {
             if args.filenames {
@@ -166,5 +165,6 @@ fn output(filename: &str, texts: BTreeMap<String, String>) {
     } else {
         info!("Only {} sections in {:?}, skipping.", texts.len(), filename);
     }
+    */
 }
 

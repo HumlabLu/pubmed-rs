@@ -121,7 +121,7 @@ struct Annotation {
     // Define fields based on the structure of annotations in your JSON
     // For example, if annotations contain an id and type:
     // id: String,
-    the_type: String
+    par_type: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -129,7 +129,7 @@ struct Relation {
     // Define fields based on the structure of relations in your JSON
     // For example, if relations contain an id and type:
     // id: String,
-    the_type: String
+    par_type: String
 }
 
 /*
@@ -137,7 +137,7 @@ struct Relation {
 */
 #[derive(Deserialize, Serialize)]
 struct OutputParagraph {
-    the_type: String,
+    par_type: String,
     text: String,
 }
 
@@ -170,7 +170,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
         for passage in document.passages {
             //dbg!("{:?}", &passage);
             let section_type = &passage.infons["section_type"];
-            let the_type = &passage.infons["type"];
+            let par_type = &passage.infons["type"];
             if (section_type == "REF")
                 || (section_type == "FIG")
                 || (section_type == "TABLE")
@@ -178,11 +178,12 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 || (section_type == "COMP_INT")
                 || (section_type == "METHODS")
                 || (section_type == "AUTH_CONT")
+                || (section_type == "ACK_FUND")
                 || (section_type == "REVIEW_INFO") {
                     continue;
                 }
             // Alternating abbreviation-meaning.
-            if (section_type == "ABBR") && (the_type == "paragraph") {
+            if (section_type == "ABBR") && (par_type == "paragraph") {
                 if abbr_count % 2 == 0 { // Or None/Some(abbr)?
                     print!("ABBR {}\t", passage.text);
                     abbr = Some(passage.text);
@@ -195,12 +196,12 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 continue;
             }
             //println!("{:?}", passage.infons);
-            if the_type == "paragraph" || the_type == "abstract" {
+            if par_type == "paragraph" || par_type == "abstract" {
                 println!("{} {}\n", section_type, passage.text);
 
                 // Create a JSON paragraph.
                 let op = OutputParagraph {
-                    the_type: section_type.to_string(),
+                    par_type: section_type.to_string(),
                     text: passage.text
                 };
                 //let js = serde_json::to_value(&op).unwrap();
@@ -209,7 +210,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
             }
         } // passages
         let js = serde_json::to_value(&od).unwrap();
-        dbg!("{}", js);
+        //dbg!("{}", js);
     }
     
     let remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
@@ -240,11 +241,10 @@ pub fn remove_section_no(section: &String) -> String {
     }
 }
 
-pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
+pub fn output_json(filename: &str, texts: Value) {
 
-    let mut sections = vec![];
     let args = Args::parse();
-
+    /*
     for (section, text) in &texts {
         let sect = if args.sectionnames {
             json!({
@@ -265,6 +265,8 @@ pub fn output_json(filename: &str, texts: BTreeMap<String, String>) {
         "filename": filename,
         "sections": sections,
     });
-    println!("{}", doc);
+    */
+    //println!("{}", texts.to_string());
+    println!("{}", serde_json::to_string_pretty(&texts).unwrap());
 }
 
