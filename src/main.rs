@@ -10,10 +10,10 @@ use clap::Parser;
 use rayon::prelude::*;
 
 mod json;
-use json::{extract_json_from_json, output_json, remove_section_no};
+use json::{extract_json_from_json, output_json, remove_section_no, OutputArticle};
 use serde_json::Value;
-
-use std::collections::BTreeMap;
+use serde_derive::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 use anyhow::Result;
 
@@ -51,6 +51,11 @@ struct Args {
     /// Remove some stuff with hard-coded regular expressions.
     #[arg(short, long, action)]
     remove: bool,
+
+    /// Output only abbreviations
+    #[arg(short, long, action)]
+    abbreviations: bool,
+
 }
 
 // With trait bounds.
@@ -105,10 +110,14 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                     match extract_json_from_json(file) {
                         Ok(texts) => {
                             let filename = file.file_name().unwrap().to_str().unwrap();
-                            if args.json {
-                                output_json(filename, texts);
+                            if args.abbreviations {
+                                output_abbreviations(filename, texts);
                             } else {
-                                output(filename, texts);
+                                if args.json {
+                                    output_json(filename, texts);
+                                } else {
+                                    output(filename, texts);
+                                }
                             }
                             debug!("Output {} ok.", filename);
                         },
@@ -129,10 +138,15 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
         match extract_json_from_json(path_name.clone()) {
             Ok(texts) => {
-                if args.json {
-                    output_json(&path_name, texts);
+                if args.abbreviations == true {
+                    dbg!("Output abbreviations.");
+                    output_abbreviations(&path_name, texts);
                 } else {
-                    output(&path_name, texts);
+                    if args.json {
+                        output_json(&path_name, texts);
+                    } else {
+                        output(&path_name, texts);
+                    }
                 }
             },
             Err(e) => error!("Error reading or parsing JSON: {}", e),
@@ -148,8 +162,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // ================================================================
 
 fn output(filename: &str, texts: Value) {
-    let args = Args::parse();
-
     let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
     for par in paragraphs {
         let par_type = &par["par_type"].as_str().expect("ERROR in machine generated JSON");
@@ -157,5 +169,15 @@ fn output(filename: &str, texts: Value) {
 
         println!("{}\t{}", par_type, par_text);
     }    
+}
+
+fn output_abbreviations(filename: &str, texts: Value) {
+    let _args = Args::parse();
+
+    let article: OutputArticle = serde_json::from_value(texts.clone()).unwrap();
+    let abbreviations = article.abbreviations;
+    for (k, v) in abbreviations.into_iter() {
+        println!("{}\t{}", k, v);
+    }
 }
 

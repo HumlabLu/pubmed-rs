@@ -135,16 +135,16 @@ struct Relation {
 /*
     Output JSON.
 */
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 struct OutputParagraph {
     par_type: String,
     text: String,
 }
 
-#[derive(Deserialize, Serialize)]
-struct OutputArticle {
-    paragraphs: Vec<OutputParagraph>,
-    abbreviations: HashMap<String, String>,
+#[derive(Deserialize, Serialize, Debug)]
+pub struct OutputArticle {
+    pub paragraphs: Vec<OutputParagraph>,
+    pub abbreviations: HashMap<String, String>,
 }
 
 

@@ -16,4 +16,5 @@ log = "0.4.20"
 rayon = "1.8.0"
 regex = "1.10.2"
 serde = { version = "1.0.192", features = ["derive"] }
+serde_derive = "1.0.202"
 serde_json = "1.0.108"
