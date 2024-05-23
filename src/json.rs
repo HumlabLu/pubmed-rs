@@ -1,6 +1,5 @@
 use std::fs;
 use serde_json::Value;
-use serde_json::json;
 use serde::{Deserialize, Serialize};
 
 use std::path::Path;
@@ -17,7 +16,7 @@ use anyhow::{Context, Result};
 
 // ===========================================================================
 
-pub fn extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
+pub fn _extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
     let data = fs::read_to_string(file_path)?;
     let json: Value = serde_json::from_str(&data)?;
 
@@ -136,7 +135,7 @@ struct Relation {
     Output JSON.
 */
 #[derive(Deserialize, Serialize, Debug)]
-struct OutputParagraph {
+pub struct OutputParagraph {
     par_type: String,
     text: String,
 }
@@ -210,21 +209,17 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 od.paragraphs.push(op);
             }
         } // passages
-        let js = serde_json::to_value(&od).unwrap();
-        //dbg!("{}", js);
     }
     
-    let remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
-    let remove_latex = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap(); // (?s) = multi-line
-    let remove_figs = Regex::new(r"\(Fig(?:ure|\.)? \d+[a-z]?\)").unwrap();
+    let _remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
+    let _remove_latex = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap(); // (?s) = multi-line
+    let _remove_figs = Regex::new(r"\(Fig(?:ure|\.)? \d+[a-z]?\)").unwrap();
     //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+[a-z]?(?:,\s*[a-z])?\)").unwrap();
     //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+(?:[a-z](?:,\s*[a-z])?)?\)").unwrap();
     ////let remove_parens = Regex::new(r"\([^)]*\)").unwrap(); // Takes too much...
-    let remove_parens = Regex::new(r"\([^)]{1,10}\)").unwrap();
-    let remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
+    let _remove_parens = Regex::new(r"\([^)]{1,10}\)").unwrap();
+    let _remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
     //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
-    
-    let args = Args::parse();
 
     let js = serde_json::to_value(&od).unwrap();
     Ok(js)
@@ -234,7 +229,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
 
 
 // Remove the "NN:" prefix from the String.
-pub fn remove_section_no(section: &String) -> String {
+pub fn _remove_section_no(section: &String) -> String {
     if section.len() > 3 {
         section.chars().skip(3).collect()
     } else {
@@ -242,32 +237,7 @@ pub fn remove_section_no(section: &String) -> String {
     }
 }
 
-pub fn output_json(filename: &str, texts: Value) {
-
-    let args = Args::parse();
-    /*
-    for (section, text) in &texts {
-        let sect = if args.sectionnames {
-            json!({
-                "section": remove_section_no(section),
-                "text": text,
-            })
-        } else {
-            json!({
-                "text": text,
-            })
-        };
-        //println!("JSON {}", sect);
-        sections.push(sect);
-    }
-
-    // Create a top level struct.
-    let doc = json!({
-        "filename": filename,
-        "sections": sections,
-    });
-    */
-    //println!("{}", texts.to_string());
+pub fn output_json(_filename: &str, texts: Value) {
     println!("{}", serde_json::to_string_pretty(&texts).unwrap());
 }
 

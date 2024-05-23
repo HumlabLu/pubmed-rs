@@ -10,10 +10,8 @@ use clap::Parser;
 use rayon::prelude::*;
 
 mod json;
-use json::{extract_json_from_json, output_json, remove_section_no, OutputArticle};
+use json::{extract_json_from_json, output_json, OutputArticle};
 use serde_json::Value;
-use serde_derive::{Serialize, Deserialize};
-use std::collections::HashMap;
 use std::collections::BTreeMap;
 
 use anyhow::Result;
@@ -99,6 +97,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     env_logger::init();
 
     let args = Args::parse();
+    info!("{:?}", args);
     
     // Check if dirname is not none first. If it exists, we parse all the
     // files in the directory.
@@ -106,7 +105,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     // We should collect the abbreviations first, before printing to
     // prevent doubles.
     //let mut abbreviations = BTreeMap::new(); // This one is sorted.
-    let mut abbreviations = Mutex::new(BTreeMap::new());
+    let abbreviations = Mutex::new(BTreeMap::new());
 
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
@@ -176,8 +175,8 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // Output
 // ================================================================
 
-// Print section-type and text.
-fn output(filename: &str, texts: Value) {
+// Print section-type and text, with optinal section-types.
+fn output(_filename: &str, texts: Value) {
     let args = Args::parse();
     
     let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
@@ -193,20 +192,9 @@ fn output(filename: &str, texts: Value) {
     }    
 }
 
-// These are just printer for each article, so we get doubles!
-fn _output_abbreviations(filename: &str, texts: Value) {
-    let _args = Args::parse();
-
-    let article: OutputArticle = serde_json::from_value(texts.clone()).unwrap();
-    let abbreviations = article.abbreviations;
-    for (k, v) in abbreviations.into_iter() {
-        println!("{}\t{}", k, v);
-    }
-}
-
+// Convert the Value to an OutputArticle, and add the abbreviations
+// to the BTreeMap.
 fn add_abbreviations(abbreviations: &mut BTreeMap<String, String>, texts: Value) {
-    let _args = Args::parse();
-
     let article: OutputArticle = serde_json::from_value(texts.clone()).unwrap();
     let new_abbreviations = article.abbreviations;
     for (k, v) in new_abbreviations.into_iter() {
@@ -214,6 +202,7 @@ fn add_abbreviations(abbreviations: &mut BTreeMap<String, String>, texts: Value)
     }
 }
 
+// Loop and print, they are sorted.
 fn output_abbreviations(abbreviations: &BTreeMap<String, String>) {
     for (key, value) in abbreviations.iter() {
         println!("{}\t{}", key, value);
