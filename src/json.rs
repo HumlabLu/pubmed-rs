@@ -163,7 +163,6 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
     for document in root.documents {
         //println!("{}", document.id);
         
-        let mut abbr_count = 0;
         let mut abbr: Option<String> = None;
 
         for passage in document.passages {
@@ -184,15 +183,17 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 }
             // Alternating abbreviation-meaning.
             if (section_type == "ABBR") && (par_type == "paragraph") {
-                if abbr_count % 2 == 0 { // Or None/Some(abbr)?
+                if abbr.is_none() { // Or None/Some(abbr)?
                     //println!("ABBR {}\t", passage.text);
-                    abbr = Some(passage.text);
+                    if passage.text.len() < 10 {
+                        //if !passage.text.contains(char::is_whitespace) {
+                        abbr = Some(passage.text);
+                    }
                 } else {
                     //println!("{}", passage.text);
                     od.abbreviations.insert(abbr.clone().unwrap(), passage.text);
                     abbr = None;
                 }
-                abbr_count += 1;
                 continue;
             }
             //println!("{:?}", passage.infons);
