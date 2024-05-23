@@ -16,6 +16,9 @@ use std::collections::BTreeMap;
 
 use anyhow::Result;
 use std::sync::Mutex;
+use std::sync::Arc;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering;
 
 /*
     RUST_LOG=debug cargo run
@@ -109,6 +112,8 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
+        let file_counter = Arc::new(AtomicUsize::new(0));
+        
         match dirfiles {
             Ok(files) => {
                 // iter(), par_iter() {
@@ -120,7 +125,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                             if args.abbreviations == true {
                                 let mut abbr = abbreviations.lock().unwrap();
                                 add_abbreviations(&mut abbr, texts);
-                                //output_abbreviations(filename, texts);
                             } else {
                                 if args.json {
                                     output_json(filename, texts);
@@ -129,15 +133,18 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                                 }
                             }
                             debug!("Output {} ok.", filename);
+                            info!("Processed {} {}", filename, file_counter.load(Ordering::SeqCst));
                         },
                         Err(e) => error!("Error reading or parsing {}: {}",
                             file.file_name().unwrap().to_str().unwrap(),
-                            e),
+                            e)
                     }
+                    file_counter.fetch_add(1, Ordering::SeqCst);
                 });
             }
-            Err(e) => error!("Failed to read directory: {}", e),
+            Err(e) => error!("Failed to read directory: {}", e)
         }
+        info!("Total files processed: {}", file_counter.load(Ordering::SeqCst));
     }
 
     // We supplied a single filename.
