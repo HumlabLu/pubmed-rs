@@ -85,14 +85,14 @@ struct Root {
     source: String,
     date: String,
     key: String,
-    infons: HashMap<String, String>,
+    infons: HashMap<String, Option<String>>,
     documents: Vec<Document>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Document {
     id: String,
-    infons: HashMap<String, String>,
+    infons: HashMap<String, Option<String>>,
     passages: Vec<Passage>,
     annotations: Vec<Annotation>,
     relations: Vec<Relation>,
@@ -101,7 +101,7 @@ struct Document {
 #[derive(Debug, Deserialize, Serialize)]
 struct Passage {
     offset: u32,
-    infons: HashMap<String, String>,
+    infons: HashMap<String, Option<String>>,
     text: String,
     sentences: Vec<Sentence>,
     annotations: Vec<Annotation>,
@@ -152,7 +152,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
     let data = fs::read_to_string(file_path)?;
 
     //let json: Value = serde_json::from_str(&data)?;
-    let root: Root = serde_json::from_str(&data).expect("JSON was not well-formatted");
+    let root: Root = serde_json::from_str(&data)? ;//.expect("JSON was not well-formatted");
     //dbg!("{:?}", &root);
 
     // Test output JSON
@@ -162,15 +162,15 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
     };
     
     for document in root.documents {
-        println!("{}", document.id);
+        //println!("{}", document.id);
         
         let mut abbr_count = 0;
         let mut abbr: Option<String> = None;
 
         for passage in document.passages {
             //dbg!("{:?}", &passage);
-            let section_type = &passage.infons["section_type"];
-            let par_type = &passage.infons["type"];
+            let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>
+            let par_type = &passage.infons["type"].clone().unwrap();  // because Option<...>
             if (section_type == "REF")
                 || (section_type == "FIG")
                 || (section_type == "TABLE")
@@ -179,16 +179,17 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 || (section_type == "METHODS")
                 || (section_type == "AUTH_CONT")
                 || (section_type == "ACK_FUND")
+                || (section_type == "SUPPL")
                 || (section_type == "REVIEW_INFO") {
                     continue;
                 }
             // Alternating abbreviation-meaning.
             if (section_type == "ABBR") && (par_type == "paragraph") {
                 if abbr_count % 2 == 0 { // Or None/Some(abbr)?
-                    print!("ABBR {}\t", passage.text);
+                    //println!("ABBR {}\t", passage.text);
                     abbr = Some(passage.text);
                 } else {
-                    println!("{}", passage.text);
+                    //println!("{}", passage.text);
                     od.abbreviations.insert(abbr.clone().unwrap(), passage.text);
                     abbr = None;
                 }
@@ -197,7 +198,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
             }
             //println!("{:?}", passage.infons);
             if par_type == "paragraph" || par_type == "abstract" {
-                println!("{} {}\n", section_type, passage.text);
+                //println!("{} {}\n", section_type, passage.text);
 
                 // Create a JSON paragraph.
                 let op = OutputParagraph {

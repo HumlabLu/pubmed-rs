@@ -150,21 +150,12 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 fn output(filename: &str, texts: Value) {
     let args = Args::parse();
 
-    println!("{}", texts);
-    /*
-    if texts.len() > 2 {
-        for (section, text) in &texts {
-            if args.filenames {
-                print!("{:?}\t", filename);
-            }
-            if args.sectionnames {
-                print!("{}\t", remove_section_no(section));
-            }
-            println!("{text}");
-        }
-    } else {
-        info!("Only {} sections in {:?}, skipping.", texts.len(), filename);
-    }
-    */
+    let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
+    for par in paragraphs {
+        let par_type = &par["par_type"].as_str().expect("ERROR in machine generated JSON");
+        let par_text = &par["text"].as_str().expect("ERROR in machine generated JSON");
+
+        println!("{}\t{}", par_type, par_text);
+    }    
 }
 
