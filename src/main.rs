@@ -14,8 +14,10 @@ use json::{extract_json_from_json, output_json, remove_section_no, OutputArticle
 use serde_json::Value;
 use serde_derive::{Serialize, Deserialize};
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use anyhow::Result;
+use std::sync::Mutex;
 
 /*
     RUST_LOG=debug cargo run
@@ -100,8 +102,12 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     
     // Check if dirname is not none first. If it exists, we parse all the
     // files in the directory.
+
     // We should collect the abbreviations first, before printing to
     // prevent doubles.
+    //let mut abbreviations = BTreeMap::new(); // This one is sorted.
+    let mut abbreviations = Mutex::new(BTreeMap::new());
+
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
         match dirfiles {
@@ -112,8 +118,10 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                     match extract_json_from_json(file) {
                         Ok(texts) => {
                             let filename = file.file_name().unwrap().to_str().unwrap();
-                            if args.abbreviations {
-                                output_abbreviations(filename, texts);
+                            if args.abbreviations == true {
+                                let mut abbr = abbreviations.lock().unwrap();
+                                add_abbreviations(&mut abbr, texts);
+                                //output_abbreviations(filename, texts);
                             } else {
                                 if args.json {
                                     output_json(filename, texts);
@@ -140,8 +148,10 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
         match extract_json_from_json(path_name.clone()) {
             Ok(texts) => {
                 if args.abbreviations == true {
-                    dbg!("Output abbreviations.");
-                    output_abbreviations(&path_name, texts);
+                    let mut abbr = abbreviations.lock().unwrap();
+                    add_abbreviations(&mut abbr, texts);
+                    //dbg!("Output abbreviations.");
+                    //output_abbreviations(&path_name, texts);
                 } else {
                     if args.json {
                         output_json(&path_name, texts);
@@ -152,6 +162,11 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
             },
             Err(e) => error!("Error reading or parsing JSON: {}", e),
         }
+    }
+
+    if args.abbreviations == true {
+        let abbr = abbreviations.lock().unwrap();
+        output_abbreviations(&abbr);
     }
     
     Ok(())
@@ -179,13 +194,29 @@ fn output(filename: &str, texts: Value) {
 }
 
 // These are just printer for each article, so we get doubles!
-fn output_abbreviations(filename: &str, texts: Value) {
+fn _output_abbreviations(filename: &str, texts: Value) {
     let _args = Args::parse();
 
     let article: OutputArticle = serde_json::from_value(texts.clone()).unwrap();
     let abbreviations = article.abbreviations;
     for (k, v) in abbreviations.into_iter() {
         println!("{}\t{}", k, v);
+    }
+}
+
+fn add_abbreviations(abbreviations: &mut BTreeMap<String, String>, texts: Value) {
+    let _args = Args::parse();
+
+    let article: OutputArticle = serde_json::from_value(texts.clone()).unwrap();
+    let new_abbreviations = article.abbreviations;
+    for (k, v) in new_abbreviations.into_iter() {
+        abbreviations.entry(k.clone()).or_insert_with(String::new).push_str(&v);
+    }
+}
+
+fn output_abbreviations(abbreviations: &BTreeMap<String, String>) {
+    for (key, value) in abbreviations.iter() {
+        println!("{}\t{}", key, value);
     }
 }
 
