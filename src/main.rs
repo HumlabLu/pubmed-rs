@@ -100,6 +100,8 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     
     // Check if dirname is not none first. If it exists, we parse all the
     // files in the directory.
+    // We should collect the abbreviations first, before printing to
+    // prevent doubles.
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
         match dirfiles {
@@ -125,7 +127,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                             file.file_name().unwrap().to_str().unwrap(),
                             e),
                     }
-                    
                 });
             }
             Err(e) => error!("Failed to read directory: {}", e),
@@ -151,7 +152,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
             },
             Err(e) => error!("Error reading or parsing JSON: {}", e),
         }
-        
     }
     
     Ok(())
@@ -161,16 +161,24 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // Output
 // ================================================================
 
+// Print section-type and text.
 fn output(filename: &str, texts: Value) {
+    let args = Args::parse();
+    
     let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
     for par in paragraphs {
         let par_type = &par["par_type"].as_str().expect("ERROR in machine generated JSON");
         let par_text = &par["text"].as_str().expect("ERROR in machine generated JSON");
 
-        println!("{}\t{}", par_type, par_text);
+        if args.sectionnames == true {
+            println!("{}\t{}", par_type, par_text);
+        } else {
+            println!("{}", par_text);
+        }
     }    
 }
 
+// These are just printer for each article, so we get doubles!
 fn output_abbreviations(filename: &str, texts: Value) {
     let _args = Args::parse();
 
