@@ -20,7 +20,6 @@ Options:
   -m, --maxfiles <MAXFILES>  If specified, maximum number of files to process from directory
   -s, --sectionnames         Include the section names in the output
       --filenames            Include the file names in the output
-  -r, --remove               Remove some stuff with hard-coded regular expressions
   -a, --abbreviations        Output only abbreviations
   -h, --help                 Print help
   -V, --version              Print version
@@ -30,7 +29,7 @@ Options:
 
 ```
 cargo run --release -- -f PMC7405720.xml.json > out.txt
-cargo run --release -- -d ./pmc_json/ -r -s --filenames
+cargo run --release -- -d ./pmc_json/ -s --filenames
 ```
 
 ## Output

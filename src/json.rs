@@ -39,7 +39,7 @@ pub fn _extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<
     let remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
     //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
     
-    let args = Args::parse();
+    let _args = Args::parse();
 
     let mut sep = "";
     for entry in body_text {
@@ -58,7 +58,7 @@ pub fn _extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<
             let mut clean_text = String::from(text);
 
             clean_text = remove_latex.replace_all(&clean_text, "").into_owned(); // always
-            if args.remove {
+            if true { // true was args.remove
                 // Quick fix for "\n1" type of refs.
                 clean_text = remove_simpleref.replace_all(&clean_text, "").into_owned();
                 clean_text = remove_figs.replace_all(&clean_text, "").into_owned();

@@ -52,9 +52,11 @@ struct Args {
     filenames: bool,
 
     /// Remove some stuff with hard-coded regular expressions.
+    /*
     #[arg(short, long, action)]
     remove: bool,
-
+     */
+    
     /// Output only abbreviations
     #[arg(short, long, action)]
     abbreviations: bool,
