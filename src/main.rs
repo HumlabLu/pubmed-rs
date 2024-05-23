@@ -183,7 +183,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // ================================================================
 
 // Print section-type and text, with optinal section-types.
-fn output(_filename: &str, texts: Value) {
+fn output(filename: &str, texts: Value) {
     let args = Args::parse();
     
     let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
@@ -191,11 +191,13 @@ fn output(_filename: &str, texts: Value) {
         let par_type = &par["par_type"].as_str().expect("ERROR in machine generated JSON");
         let par_text = &par["text"].as_str().expect("ERROR in machine generated JSON");
 
-        if args.sectionnames == true {
-            println!("{}\t{}", par_type, par_text);
-        } else {
-            println!("{}", par_text);
+        if args.filenames == true {
+            print!("{}\t", filename);
         }
+        if args.sectionnames == true {
+            print!("{}\t", par_type);
+        }
+        println!("{}", par_text);
     }    
 }
 
