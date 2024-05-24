@@ -12,7 +12,7 @@ A separate option to generate a list with abbreviations is available.
 
 These are the counts in about 75000 articles.
 
-| Count  | Section Type | Ignored |
+| Count  | Section Type | Ignored :x: |
 | ------------: | ------------- | ---| 
 | 2851         |  "KEYWORD" |  | 
 | 4916         |  "REVIEW_INFO" | :x: |
@@ -33,6 +33,24 @@ These are the counts in about 75000 articles.
 | 786911         |  "INTRO" |  |
 | 994629         |  "METHODS" | :x: |
 | 3035484         |  "REF" | :x: |
+
+Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list.
+
+A typical text to be included looks like this.
+```json
+{
+      "offset": 1879,
+      "infons": {
+          "section_type": "INTRO",
+          "type": "paragraph"
+      },
+      "text": "DNA methylation is an epigenetic modification [...] activity.",
+      "sentences": [],
+      "annotations": [],
+      "relations": []
+},
+```
+
 
 ## Usage
 
