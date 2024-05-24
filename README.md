@@ -125,10 +125,3 @@ After cloning the git repo, run the following.
 cd pubmed-rs
 cargo install --path .
 ```
-
-## Debug
-
-Run with `RUST_LOG` set to `info` or `´debug`.
-```shell
-RUST_LOG=info cargo run --release ...
-```
