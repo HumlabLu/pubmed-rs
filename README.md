@@ -118,9 +118,17 @@ The JSON output contains all the available information.
 }
 ```
 
+## Installation
+
+After cloning the git repo, run the following.
+```shell
+cd pubmed-rs
+cargo install --path .
+```
+
 ## Debug
 
-Rus with `RUST_LOG` set to `info` or `´debug`.
+Run with `RUST_LOG` set to `info` or `´debug`.
 ```shell
 RUST_LOG=info cargo run --release ...
 ```
