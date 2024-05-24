@@ -8,6 +8,45 @@ Output is written to standard out.
 
 A separate option to generate a list with abbreviations is available. 
 
+## Section Types
+
+These are the counts in about 75000 articles.
+
+| Count  | Section Type |
+| ------------: | ------------- |
+| 2851         |  "KEYWORD" |
+| 4916         |  "REVIEW_INFO" |
+| 18038         |  "APPENDIX" |
+| 19429         |  "CASE" |
+| 27063         |  "ACK_FUND" |
+| 33374         |  "AUTH_CONT" |
+| 40131         |  "COMP_INT" |
+| 60772         |  "SUPPL" |
+| 74833         |  "TITLE" |
+| 112995         |  "ABBR" |
+| 133909         |  "CONCL" |
+| 230237         |  "ABSTRACT" |
+| 326559         |  "FIG" |
+| 399120         |  "TABLE" |
+| 451921         |  "DISCUSS" |
+| 707622         |  "RESULTS" |
+| 786911         |  "INTRO" |
+| 994629         |  "METHODS" |
+| 3035484         |  "REF" |
+
+Ignores the following section types.
+ - "REF"
+ - "FIG"
+ - "TABLE"
+ - "APPENDIX"
+ - "COMP_INT"
+ - "CASE"
+ - "METHODS"
+ - "AUTH_CONT"
+ - "ACK_FUND"
+ - "SUPPL"
+ - "REVIEW_INFO"
+
 ## Usage
 
 ```

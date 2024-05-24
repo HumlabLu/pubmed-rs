@@ -174,7 +174,8 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 || (section_type == "TABLE")
                 || (section_type == "APPENDIX")
                 || (section_type == "COMP_INT")
-                || (section_type == "METHODS")
+                || (section_type == "CASE")
+                || (section_type == "METHODS") // check meeting notes
                 || (section_type == "AUTH_CONT")
                 || (section_type == "ACK_FUND")
                 || (section_type == "SUPPL")
@@ -183,7 +184,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
                 }
             // Alternating abbreviation-meaning.
             if (section_type == "ABBR") && (par_type == "paragraph") {
-                if abbr.is_none() { // Or None/Some(abbr)?
+                if abbr.is_none() { 
                     //println!("ABBR {}\t", passage.text);
                     if passage.text.len() < 10 {
                         //if !passage.text.contains(char::is_whitespace) {
