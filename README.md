@@ -34,7 +34,7 @@ These are the counts in about 75000 articles.
 |  994629       | `METHODS` | :x: |
 | 3035484       | `REF` | :x: |
 
-Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list.
+Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list. If the `--allowed` parameter has been specified, only those types will be added to the output.
 
 A typical text to be included looks like this.
 ```json
@@ -64,6 +64,7 @@ Options:
   -s, --sectionnames         Include the section names in the output
       --filenames            Include the file names in the output
   -a, --abbreviations        Output only abbreviations
+      --allowed <ALLOWED>...
   -h, --help                 Print help
   -V, --version              Print version
 ```

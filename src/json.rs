@@ -178,22 +178,27 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                 
                 let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>
                 let par_type = &passage.infons["type"].clone().unwrap();  // because Option<...>
-                if (section_type == "REF")
-                    || (section_type == "FIG")
-                    || (section_type == "TABLE")
-                    || (section_type == "APPENDIX")
-                    || (section_type == "COMP_INT")
-                    || (section_type == "CASE")
-                    || (section_type == "METHODS") // check meeting notes
-                    || (section_type == "AUTH_CONT")
-                    || (section_type == "ACK_FUND")
-                    || (section_type == "SUPPL")
-                    || (section_type == "REVIEW_INFO") {
-                        continue;
-                    }
 
-                if ! allowed.is_empty() && ! allowed.contains(section_type) {
-                    continue;
+                if allowed.is_empty() {
+                    if (section_type == "REF")
+                        || (section_type == "FIG")
+                        || (section_type == "TABLE")
+                        || (section_type == "APPENDIX")
+                        || (section_type == "COMP_INT")
+                        || (section_type == "CASE")
+                        || (section_type == "METHODS") // check meeting notes
+                        || (section_type == "AUTH_CONT")
+                        || (section_type == "ACK_FUND")
+                        || (section_type == "SUPPL")
+                        || (section_type == "REVIEW_INFO") {
+                            continue;
+                        }
+                } else { // allowed is not empty
+                    if section_type != "ABBR" { // but ABBR goes through anyway
+                        if ! allowed.contains(section_type) {
+                            continue;
+                        }
+                    }
                 }
                 
                 // Alternating abbreviation-meaning.
