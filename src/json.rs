@@ -186,7 +186,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                         || (section_type == "APPENDIX")
                         || (section_type == "COMP_INT")
                         || (section_type == "CASE")
-                        || (section_type == "METHODS") // check meeting notes
+                        //|| (section_type == "METHODS") // Yes, no, maybe?
                         || (section_type == "AUTH_CONT")
                         || (section_type == "ACK_FUND")
                         || (section_type == "SUPPL")

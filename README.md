@@ -31,7 +31,7 @@ These are the counts in about 75000 articles.
 |  451921       | `DISCUSS` |  |
 |  707622       | `RESULTS` |  |
 |  786911       | `INTRO` |  |
-|  994629       | `METHODS` | :x: |
+|  994629       | `METHODS` |  |
 | 3035484       | `REF` | :x: |
 
 Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list. If the `--allowed` parameter has been specified, only those types will be added to the output. In that case the ignore list is disbaled.
