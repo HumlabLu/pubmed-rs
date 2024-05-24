@@ -110,7 +110,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     info!("{:?}", args);
 
     let allowed: BTreeSet<String> = args.allowed.into_iter().collect();
-    dbg!("{}", &allowed);
     
     // Check if dirname is not none first. If it exists, we parse all the
     // files in the directory.
