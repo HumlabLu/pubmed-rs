@@ -100,7 +100,7 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>> {
 fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     //env_logger::init();
     Builder::new()
-        .filter_level(LevelFilter::Info) //LevelFilter::max())
+        .filter_level(LevelFilter::Info) //LevelFilter::max()) // Info
         .init();
     
     let args = Args::parse();
@@ -122,10 +122,10 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
             Ok(files) => {
                 // iter(), par_iter() {
                 files.par_iter().for_each(|file| { // Note that the order is unknown.
-                    debug!("Starting {}.", file.file_name().unwrap().to_str().unwrap());
-                    match extract_json_from_json(file) {
+                    let filename = file.file_name().unwrap().to_str().unwrap();
+                    debug!("Starting {}.", filename);
+                    match extract_json_from_json(file, filename) {
                         Ok(texts) => {
-                            let filename = file.file_name().unwrap().to_str().unwrap();
                             if args.abbreviations == true {
                                 let mut abbr = abbreviations.lock().unwrap();
                                 add_abbreviations(&mut abbr, texts);
@@ -155,7 +155,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
 
-        match extract_json_from_json(path_name.clone()) {
+        match extract_json_from_json(path_name.clone(), &path_name) {
             Ok(texts) => {
                 if args.abbreviations == true {
                     let mut abbr = abbreviations.lock().unwrap();
@@ -216,6 +216,7 @@ fn add_abbreviations(abbreviations: &mut BTreeMap<String, String>, texts: Value)
 
 // Loop and print, they are sorted.
 fn output_abbreviations(abbreviations: &BTreeMap<String, String>) {
+    println!("output_abbreviations");
     for (key, value) in abbreviations.iter() {
         println!("{}\t{}", key, value);
     }

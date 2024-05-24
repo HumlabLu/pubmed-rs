@@ -13,6 +13,7 @@ use crate::Args;
 use clap::Parser;
 
 use anyhow::{Context, Result};
+use crate::error;
 
 // ===========================================================================
 
@@ -83,7 +84,7 @@ pub fn _extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<
 struct Root {
     source: String,
     date: String,
-    key: String,
+    //key: String,
     infons: HashMap<String, Option<String>>,
     documents: Vec<Document>,
 }
@@ -93,8 +94,8 @@ struct Document {
     id: String,
     infons: HashMap<String, Option<String>>,
     passages: Vec<Passage>,
-    annotations: Vec<Annotation>,
-    relations: Vec<Relation>,
+    //annotations: Vec<Annotation>,
+    //relations: Vec<Relation>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -102,9 +103,9 @@ struct Passage {
     offset: u32,
     infons: HashMap<String, Option<String>>,
     text: String,
-    sentences: Vec<Sentence>,
-    annotations: Vec<Annotation>,
-    relations: Vec<Relation>,
+    //sentences: Vec<Sentence>,
+    //annotations: Vec<Annotation>,
+    //relations: Vec<Relation>,
 }
 
 
@@ -147,7 +148,7 @@ pub struct OutputArticle {
 }
 
 
-pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
+pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str) -> Result<Value> {
     let data = fs::read_to_string(file_path)?;
 
     //let json: Value = serde_json::from_str(&data)?;
@@ -167,48 +168,55 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P) -> Result<Value> {
 
         for passage in document.passages {
             //dbg!("{:?}", &passage);
-            let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>
-            let par_type = &passage.infons["type"].clone().unwrap();  // because Option<...>
-            if (section_type == "REF")
-                || (section_type == "FIG")
-                || (section_type == "TABLE")
-                || (section_type == "APPENDIX")
-                || (section_type == "COMP_INT")
-                || (section_type == "CASE")
-                || (section_type == "METHODS") // check meeting notes
-                || (section_type == "AUTH_CONT")
-                || (section_type == "ACK_FUND")
-                || (section_type == "SUPPL")
-                || (section_type == "REVIEW_INFO") {
+
+            // Some documentws don't have section types?
+            if passage.infons.contains_key("section_type") {
+                
+                let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>
+                let par_type = &passage.infons["type"].clone().unwrap();  // because Option<...>
+                if (section_type == "REF")
+                    || (section_type == "FIG")
+                    || (section_type == "TABLE")
+                    || (section_type == "APPENDIX")
+                    || (section_type == "COMP_INT")
+                    || (section_type == "CASE")
+                    || (section_type == "METHODS") // check meeting notes
+                    || (section_type == "AUTH_CONT")
+                    || (section_type == "ACK_FUND")
+                    || (section_type == "SUPPL")
+                    || (section_type == "REVIEW_INFO") {
+                        continue;
+                    }
+                // Alternating abbreviation-meaning.
+                if (section_type == "ABBR") && (par_type == "paragraph") {
+                    if abbr.is_none() { 
+                        //println!("ABBR {}\t", passage.text);
+                        if passage.text.len() < 10 {
+                            //if !passage.text.contains(char::is_whitespace) {
+                            abbr = Some(passage.text);
+                        }
+                    } else {
+                        //println!("{}", passage.text);
+                        od.abbreviations.insert(abbr.clone().unwrap(), passage.text);
+                        abbr = None;
+                    }
                     continue;
                 }
-            // Alternating abbreviation-meaning.
-            if (section_type == "ABBR") && (par_type == "paragraph") {
-                if abbr.is_none() { 
-                    //println!("ABBR {}\t", passage.text);
-                    if passage.text.len() < 10 {
-                        //if !passage.text.contains(char::is_whitespace) {
-                        abbr = Some(passage.text);
-                    }
-                } else {
-                    //println!("{}", passage.text);
-                    od.abbreviations.insert(abbr.clone().unwrap(), passage.text);
-                    abbr = None;
+                //println!("{:?}", passage.infons);
+                if par_type == "paragraph" || par_type == "abstract" {
+                    //println!("{} {}\n", section_type, passage.text);
+                    
+                    // Create a JSON paragraph.
+                    let op = OutputParagraph {
+                        par_type: section_type.to_string(),
+                        text: passage.text
+                    };
+                    //let js = serde_json::to_value(&op).unwrap();
+                    //dbg!("{}", js);
+                    od.paragraphs.push(op);
                 }
-                continue;
-            }
-            //println!("{:?}", passage.infons);
-            if par_type == "paragraph" || par_type == "abstract" {
-                //println!("{} {}\n", section_type, passage.text);
-
-                // Create a JSON paragraph.
-                let op = OutputParagraph {
-                    par_type: section_type.to_string(),
-                    text: passage.text
-                };
-                //let js = serde_json::to_value(&op).unwrap();
-                //dbg!("{}", js);
-                od.paragraphs.push(op);
+            } else { // has section_type
+                error!("{}: passage has no section_type.", filename);
             }
         } // passages
     }

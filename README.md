@@ -51,7 +51,6 @@ A typical text to be included looks like this.
 },
 ```
 
-
 ## Usage
 
 ```
@@ -74,6 +73,22 @@ Options:
 ```
 cargo run --release -- -f PMC7405720.xml.json > out.txt
 cargo run --release -- -d ./pmc_json/ -s --filenames
+```
+
+## Abbreviations
+
+Abbreviations are taken from the `ABBR` sections in the documents. There are no markers identifying which is abbreviation or definition, so this is determined heuristically by the program.
+
+Sometimes the abbreviations are in one big paragraph. On other occasions it just contains text.
+```text
+AD      Alzheimer’s disease
+AD, Alzheimer’s disease; aMCI, amnestic mild cognitive impairment; PID, persistent insomnia disorder; DSM V, Dia
+gnostic and statistical manual of mental disorders, 5th edition; HADS-A/D, Hospital anxiety and depression scale
+, Anxiety/Depression; ISI, Insomnia severity index; MCI, mild cognitive impairment; MoCA, Montreal cognitive ass
+essment tool; PSQI, Pittsburgh sleep quality index; TIB, Time in bed; REM, rapid eye movement.  As much of the d
+ata pertains to patient information, the data will not be made publicly available. However, the data that suppor
+t the findings of this study are available upon reasonable request from the corresponding author.
+AD-MSCs Adipose-derived mesenchymal stem cells
 ```
 
 ## Output
