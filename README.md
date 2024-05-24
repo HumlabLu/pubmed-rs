@@ -72,7 +72,7 @@ ABSTRACT	Tendon injuries have a high incidence and limited treatment options. St
 ABSTRACT	However, high local concentrations of reactive oxygenspecies (ROS)
 ```
 
-The abbreviation list is a tab-separated keyword value list.
+The abbreviation list is a tab-separated keyword value list. This can be shown with the `-a` option.
 ```text
 ROS	Reactive oxygen species
 ```
@@ -100,4 +100,9 @@ The JSON output contains all the available information.
 }
 ```
 
+## Debug
 
+Rus with `RUST_LOG` set to `info` or `´debug`.
+```shell
+RUST_LOG=info cargo run --release ...
+```
