@@ -12,6 +12,7 @@ mod json;
 use json::{extract_json_from_json, output_json, OutputArticle};
 use serde_json::Value;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 use anyhow::Result;
 use std::sync::Mutex;
@@ -60,6 +61,8 @@ struct Args {
     #[arg(short, long, action)]
     abbreviations: bool,
 
+    #[clap(long, value_delimiter = ' ', num_args = 1..)]
+    pub allowed: Vec<String>,
 }
 
 // With trait bounds.
@@ -105,6 +108,9 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     
     let args = Args::parse();
     info!("{:?}", args);
+
+    let allowed: BTreeSet<String> = args.allowed.into_iter().collect();
+    dbg!("{}", &allowed);
     
     // Check if dirname is not none first. If it exists, we parse all the
     // files in the directory.
@@ -124,7 +130,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                 files.par_iter().for_each(|file| { // Note that the order is unknown.
                     let filename = file.file_name().unwrap().to_str().unwrap();
                     debug!("Starting {}.", filename);
-                    match extract_json_from_json(file, filename) {
+                    match extract_json_from_json(file, filename, &allowed) {
                         Ok(texts) => {
                             if args.abbreviations == true {
                                 let mut abbr = abbreviations.lock().unwrap();
@@ -155,7 +161,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
 
-        match extract_json_from_json(path_name.clone(), &path_name) {
+        match extract_json_from_json(path_name.clone(), &path_name, &allowed) {
             Ok(texts) => {
                 if args.abbreviations == true {
                     let mut abbr = abbreviations.lock().unwrap();

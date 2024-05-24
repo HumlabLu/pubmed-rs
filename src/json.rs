@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 
 use regex::Regex;
@@ -148,9 +149,12 @@ pub struct OutputArticle {
 }
 
 
-pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str) -> Result<Value> {
+// The exttra filename is for printing error info. Our signature doesn't
+// allow printing of "Path", and the directory version sends Paths
+// this way. This should be fixed!
+pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allowed: &BTreeSet<String>) -> Result<Value> {
     let data = fs::read_to_string(file_path)?;
-
+    
     //let json: Value = serde_json::from_str(&data)?;
     let root: Root = serde_json::from_str(&data)? ;//.expect("JSON was not well-formatted");
     //dbg!("{:?}", &root);
@@ -187,6 +191,11 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str) -> R
                     || (section_type == "REVIEW_INFO") {
                         continue;
                     }
+
+                if ! allowed.is_empty() && ! allowed.contains(section_type) {
+                    continue;
+                }
+                
                 // Alternating abbreviation-meaning.
                 if (section_type == "ABBR") && (par_type == "paragraph") {
                     if abbr.is_none() { 
