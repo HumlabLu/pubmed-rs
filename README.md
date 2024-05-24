@@ -12,27 +12,27 @@ A separate option to generate a list with abbreviations is available.
 
 These are the counts in about 75000 articles.
 
-| Count  | Section Type | Ignored :x: |
+| Count  | Section Type | :x: Ignored |
 | ------------: | ------------- | ---| 
-| 2851         |  "KEYWORD" |  | 
-| 4916         |  "REVIEW_INFO" | :x: |
-| 18038         |  "APPENDIX" | :x: |
-| 19429         |  "CASE" | :x: |
-| 27063         |  "ACK_FUND" | :x: |
-| 33374         |  "AUTH_CONT" | :x: |
-| 40131         |  "COMP_INT" | :x: |
-| 60772         |  "SUPPL" | :x: |
-| 74833         |  "TITLE" |  |
-| 112995         |  "ABBR" |  (special) |
-| 133909         |  "CONCL" | |
-| 230237         |  "ABSTRACT" |  |
-| 326559         |  "FIG" | :x: |
-| 399120         |  "TABLE" | :x: |
-| 451921         |  "DISCUSS" |  |
-| 707622         |  "RESULTS" |  |
-| 786911         |  "INTRO" |  |
-| 994629         |  "METHODS" | :x: |
-| 3035484         |  "REF" | :x: |
+|    2851       | `KEYWORD` |  | 
+|    4916       | `REVIEW_INFO` | :x: |
+|   18038       | `APPENDIX` | :x: |
+|   19429       | `CASE` | :x: |
+|   27063       | `ACK_FUND` | :x: |
+|   33374       | `AUTH_CONT` | :x: |
+|   40131       | `COMP_INT` | :x: |
+|   60772       | `SUPPL` | :x: |
+|   74833       | `TITLE` |  |
+|  112995       | `ABBR` |  (special) |
+|  133909       | `CONCL` | |
+|  230237       | `ABSTRACT` |  |
+|  326559       | `FIG` | :x: |
+|  399120       | `TABLE` | :x: |
+|  451921       | `DISCUSS` |  |
+|  707622       | `RESULTS` |  |
+|  786911       | `INTRO` |  |
+|  994629       | `METHODS` | :x: |
+| 3035484       | `REF` | :x: |
 
 Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list.
 
