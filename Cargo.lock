@@ -218,8 +218,6 @@ dependencies = [
 [[package]]
 name = "cutters"
 version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fd442446f9accd59a61a2a7d94dc61cffabebe2d1562392825d8780a8ccf9d0"
 dependencies = [
  "pest",
  "pest_derive",
