@@ -9,10 +9,11 @@ use clap::Parser;
 use rayon::prelude::*;
 
 mod json;
-use json::{extract_json_from_json, output_json, OutputArticle};
+use json::{extract_json_from_json, output_json, OutputArticle, OutputChunk};
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::collections::HashMap;
 
 use anyhow::Result;
 use std::sync::Mutex;
@@ -126,7 +127,14 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
     if args.dirname.is_some() {
         let dirfiles = get_files_in_directory(args.dirname.unwrap());
         let file_counter = Arc::new(AtomicUsize::new(0));
-        
+
+        // Mutex needed.
+        /*
+        let mut oc = OutputChunk { 
+            articles: HashMap::new()
+        };
+        */
+
         match dirfiles {
             Ok(files) => {
                 // iter(), par_iter() {
@@ -139,6 +147,12 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                                 let mut abbr = abbreviations.lock().unwrap();
                                 add_abbreviations(&mut abbr, texts);
                             } else {
+                                // We need to get a outputArticle back, not a String...
+                                /*
+                                let pmid = texts.pmid;
+                                let v = texts;
+                                oc.articles.entry(pmid).or_insert_with(String::new).pmid.push_str(&v);
+                                */
                                 if args.json {
                                     output_json(filename, texts);
                                 } else {

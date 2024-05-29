@@ -153,7 +153,7 @@ pub struct OutputArticle {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct OutputChunk {
-    pub articles: Vec<OutputArticle>,
+    pub articles: HashMap<String, OutputArticle>,
 }
 
 
@@ -276,7 +276,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
     //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
 
     let js = serde_json::to_value(&od).unwrap();
-    Ok(js)
+    Ok(js) // od?
 }
 
 // ----------------------------------------------------------------------------
