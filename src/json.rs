@@ -147,6 +147,13 @@ pub struct OutputArticle {
     pub paragraphs: Vec<OutputParagraph>,
     pub abbreviations: HashMap<String, String>,
     pub year: String,
+    pub pmid: String,
+    pub title: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct OutputChunk {
+    pub articles: Vec<OutputArticle>,
 }
 
 
@@ -165,6 +172,8 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
         paragraphs: vec![],
         abbreviations: HashMap::new(),
         year: "UNK".to_string(),
+        pmid: "UNK".to_string(),
+        title: "UNK".to_string(),
     };
 
     let args = Args::parse();
@@ -185,6 +194,8 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                 
                 if par_type == "front" {
                     od.year = passage.infons["year"].clone().unwrap();
+                    od.pmid = passage.infons["article-id_pmid"].clone().unwrap();
+                    od.title = passage.text.clone();
                 }
 
                 if allowed.is_empty() {
