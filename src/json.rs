@@ -146,6 +146,7 @@ pub struct OutputParagraph {
 pub struct OutputArticle {
     pub paragraphs: Vec<OutputParagraph>,
     pub abbreviations: HashMap<String, String>,
+    pub year: String,
 }
 
 
@@ -163,6 +164,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
     let mut od = OutputArticle { // OutputDocument?
         paragraphs: vec![],
         abbreviations: HashMap::new(),
+        year: "UNK".to_string(),
     };
 
     let args = Args::parse();
@@ -175,11 +177,15 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
         for passage in document.passages {
             //dbg!("{:?}", &passage);
 
-            // Some documentws don't have section types?
+            // Some documents don't have section types?
             if passage.infons.contains_key("section_type") {
                 
-                let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>
+                let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>                
                 let par_type = &passage.infons["type"].clone().unwrap();  // because Option<...>
+                
+                if par_type == "front" {
+                    od.year = passage.infons["year"].clone().unwrap();
+                }
 
                 if allowed.is_empty() {
                     if (section_type == "REF")
