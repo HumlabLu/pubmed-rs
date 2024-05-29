@@ -192,9 +192,13 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                 let section_type = &passage.infons["section_type"].clone().unwrap(); // clone().unwrap because Option<...>                
                 let par_type = &passage.infons["type"].clone().unwrap();  // because Option<...>
                 
-                if par_type == "front" {
-                    od.year = passage.infons["year"].clone().unwrap();
-                    od.pmid = passage.infons["article-id_pmid"].clone().unwrap();
+                if par_type == "front" && passage.offset == 0 {
+                    if passage.infons.contains_key("year") {
+                        od.year = passage.infons["year"].clone().unwrap();
+                     }  
+                    if passage.infons.contains_key("article-id_pmc") {
+                        od.pmid = passage.infons["article-id_pmc"].clone().unwrap();
+                    }
                     od.title = passage.text.clone();
                 }
 
