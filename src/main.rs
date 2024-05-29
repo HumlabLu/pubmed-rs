@@ -48,8 +48,12 @@ struct Args {
     sectionnames: bool,
 
     /// Include the file names in the output.
-    #[arg(long, action)]
+    #[arg(short = 'F', long, action)]
     filenames: bool,
+    
+    /// Sentence splitter
+    #[arg(short = 'S', long, action)]
+    sentences: bool,
 
     /// Remove some stuff with hard-coded regular expressions.
     /*

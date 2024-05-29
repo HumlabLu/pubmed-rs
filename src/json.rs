@@ -164,6 +164,8 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
         paragraphs: vec![],
         abbreviations: HashMap::new(),
     };
+
+    let args = Args::parse();
     
     for document in root.documents {
         //println!("{}", document.id);
@@ -220,7 +222,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                 if par_type == "paragraph" || par_type == "abstract" {
                     //println!("{} {}\n", section_type, passage.text);
 
-                    if true == false {
+                    if args.sentences == false {
                         // Create a JSON paragraph.
                         // TODO: Split here, and just create smaller paragraphs!
                         let op = OutputParagraph {
