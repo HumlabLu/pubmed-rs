@@ -10,7 +10,8 @@ abbreviation = _{
         (
             ("ca" | "cca" | "def" | "anon" | "ed" | "no" | "vs" | "est") | // common
             ("Mr" | "Mrs" | "Dr" | "Esq" | "Hon" | "Jr" | "Mr" | "Mrs" | "Ms" | "Msgr" | "Prof" | "Rev" | "Rt" | "Sr") | // titles
-            ("Ave" | "Blvd" | "Cyn" | "Dr" | "Ln" | "Rd" | "St" | "Ltd") 
+            ("Ave" | "Blvd" | "Cyn" | "Dr" | "Ln" | "Rd" | "St" | "Ltd") |
+	    ("et al")
         )
         ~ WHITE_SPACE* ~ ".") |
     // special
