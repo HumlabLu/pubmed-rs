@@ -149,7 +149,7 @@ pub struct OutputArticle {
 }
 
 
-// The exttra filename is for printing error info. Our signature doesn't
+// The extra filename is for printing error info. Our signature doesn't
 // allow printing of "Path", and the directory version sends Paths
 // this way. This should be fixed!
 pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allowed: &BTreeSet<String>) -> Result<Value> {
@@ -219,15 +219,26 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                 //println!("{:?}", passage.infons);
                 if par_type == "paragraph" || par_type == "abstract" {
                     //println!("{} {}\n", section_type, passage.text);
-                    
-                    // Create a JSON paragraph.
-                    let op = OutputParagraph {
-                        par_type: section_type.to_string(),
-                        text: passage.text
-                    };
-                    //let js = serde_json::to_value(&op).unwrap();
-                    //dbg!("{}", js);
-                    od.paragraphs.push(op);
+
+                    if true == false {
+                        // Create a JSON paragraph.
+                        // TODO: Split here, and just create smaller paragraphs!
+                        let op = OutputParagraph {
+                            par_type: section_type.to_string(),
+                            text: passage.text.clone()
+                        };
+                        //let js = serde_json::to_value(&op).unwrap();
+                        //dbg!("{}", js);
+                        od.paragraphs.push(op);
+                    } else {
+                        for s in cutters::cut(&passage.text, cutters::Language::English) {
+                            let op = OutputParagraph {
+                                par_type: section_type.to_string(),
+                                text: s.str.to_string()
+                            };
+                            od.paragraphs.push(op);
+                        }
+                    }
                 }
             } else { // has section_type
                 error!("{}: passage has no section_type.", filename);
