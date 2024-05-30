@@ -121,7 +121,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
     // We should collect the abbreviations first, before printing to
     // prevent doubles.
-    //let mut abbreviations = BTreeMap::new(); // This one is sorted.
     let abbreviations = Mutex::new(BTreeMap::new());
 
     if args.dirname.is_some() {
@@ -147,7 +146,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                                 let mut abbr = abbreviations.lock().unwrap();
                                 add_abbreviations(&mut abbr, texts);
                             } else {
-                                // We need to get a outputArticle back, not a String...
+                                // We need to get an OutputArticle back, not a String...
                                 /*
                                 let pmid = texts.pmid;
                                 let v = texts;
@@ -215,38 +214,16 @@ fn output(filename: &str, texts: Value) {
     
     let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
 
-    /*
-    let paragraphs =  {
-        let mut new_paragraphs: Vec<serde_json::Value> = vec![];
-        for par in paragraphs {
-            println!("{}", par);
-            let par_text = &par["text"].as_str().expect("ERROR in machine generated JSON");
-            for s in cutters::cut(par_text, cutters::Language::English) {
-                //println!("--> {:?}", s.str);
-                let root: OutputParagraph = serde_json::from_str(&s.str).expect("JSON was not well-formatted");
-                //let foo = serde_json::to_string_pretty(&s.str).unwrap();
-                //println!("--> {:?}", foo);
-                //new_paragraphs.push(serde_json::Value::String(foo)); // Should create a Value<String> or something.
-                //new_paragraphs.push(root); // Should create a Value<String> or something.
-                
-            }
-        }
-        new_paragraphs
-    };*/
-
-    // Make these a prefix string so we can loop over pars/setences
     for par in paragraphs {
-        let mut prefix = "".to_string();
         if args.filenames == true {
-            prefix += &format!("{}\t", filename);
+            print!("{}\t", filename);
         }
         if args.sectionnames == true {
             let par_type = &par["par_type"].as_str().expect("ERROR in machine generated JSON");
-            //print!("{}\t", par_type);
-            prefix += &format!("{}\t", par_type);
+            print!("{}\t", par_type);
         }
         let par_text = &par["text"].as_str().expect("ERROR in machine generated JSON");
-        println!("{}{}", prefix, par_text); // Here we should split into sentences.
+        println!("{}", par_text); 
     }    
 }
 
