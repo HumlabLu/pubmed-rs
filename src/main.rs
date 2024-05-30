@@ -12,7 +12,6 @@ mod json;
 use json::{extract_json_from_json, output_json, OutputArticle, OutputChunk};
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::collections::HashMap;
 
 use anyhow::Result;
 use std::sync::Mutex;
