@@ -166,11 +166,20 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
             Err(e) => error!("Failed to read directory: {}", e)
         } // match dirfiles
         info!("Total files processed: {}", file_counter.load(Ordering::SeqCst));
-        // output, or create chunks?
-        
+        // output, and/or create chunks?
+        // WHat abt text output?
+        let oc1: &OutputChunk = &*oc.lock().unwrap();
+        if args.json {
+            println!("{}", serde_json::to_string_pretty(oc1).unwrap());
+        } else {
+            for (pmid, article) in &oc1.articles {
+                output(pmid, article);
+            }
+        }
     }
 
-    // We supplied a single filename.
+    // We supplied a single filename. Should output be OutputChunk or
+    // OutputArticle?
     if args.filename.is_some() {
         let path_name = args.filename.unwrap();
 
@@ -183,9 +192,9 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                     //output_abbreviations(&path_name, texts);
                 } else {
                     if args.json {
-                        output_json(&path_name, texts);
+                        output_json(&path_name, &texts);
                     } else {
-                        output(&path_name, texts);
+                        output(&path_name, &texts);
                     }
                 }
             },
@@ -206,10 +215,10 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // ================================================================
 
 // Print section-type and text, with optinal filenames/section-types.
-fn output(filename: &str, texts: OutputArticle) {
+fn output(filename: &str, texts: &OutputArticle) {
     let args = Args::parse();
     
-    let paragraphs = texts.paragraphs;
+    let paragraphs = &texts.paragraphs;
 
     for par in paragraphs {
         if args.filenames == true {

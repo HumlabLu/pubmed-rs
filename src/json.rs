@@ -206,7 +206,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
     Ok(od)
 }
 
-pub fn output_json(_filename: &str, texts: OutputArticle) {
-    println!("{}", serde_json::to_string_pretty(&texts).unwrap());
+pub fn output_json(_filename: &str, texts: &OutputArticle) {
+    println!("{}", serde_json::to_string_pretty(texts).unwrap());
 }
 
