@@ -65,7 +65,7 @@ struct Args {
     #[arg(short, long, action)]
     abbreviations: bool,
 
-    #[clap(long, value_delimiter = ' ', num_args = 1..)]
+    #[clap(short = 'A', long, value_delimiter = ' ', num_args = 1..)]
     pub allowed: Vec<String>,
 }
 
