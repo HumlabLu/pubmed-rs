@@ -77,11 +77,23 @@ pub struct OutputArticle {
     pub title: String,
 }
 
+// Output OutputArticle and OutputChunk with the same function.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct OutputChunk {
     pub articles: HashMap<String, OutputArticle>,
 }
 
+pub trait OutputData: Serialize {
+    fn to_json(&self) -> String {
+        serde_json::to_string_pretty(self).unwrap()
+    }
+}
+impl OutputData for OutputArticle {}
+impl OutputData for OutputChunk {}
+
+pub fn output_json<T: OutputData>(_filename: &str, data: &T) {
+    println!("{}", data.to_json());
+}
 
 // The extra filename is for printing error info. Our signature doesn't
 // allow printing of "Path", and the directory version sends Paths
@@ -204,9 +216,5 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
     //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
 
     Ok(od)
-}
-
-pub fn output_json(_filename: &str, texts: &OutputArticle) {
-    println!("{}", serde_json::to_string_pretty(texts).unwrap());
 }
 

@@ -146,12 +146,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                                 let pmid = texts.pmid.clone();
                                 let mut oc1 = oc.lock().unwrap();
                                 oc1.articles.insert(pmid, texts);
-                                
-                                /*if args.json {
-                                    output_json(filename, texts);
-                                } else {
-                                    output(filename, texts);
-                                }*/
                             }
                             debug!("Output {} ok.", filename);
                             info!("Processed {} {}", filename, file_counter.load(Ordering::SeqCst));
@@ -167,7 +161,6 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
         } // match dirfiles
         info!("Total files processed: {}", file_counter.load(Ordering::SeqCst));
         // output, and/or create chunks?
-        // WHat abt text output?
         let oc1: &OutputChunk = &*oc.lock().unwrap();
         if args.json {
             println!("{}", serde_json::to_string_pretty(oc1).unwrap());
