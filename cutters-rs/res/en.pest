@@ -1,3 +1,19 @@
+url = _{
+    ( protocol ~ "://" ~ domain ~ path? )
+}
+
+protocol = _{  "http" | "https"  }
+
+domain = _{ subdomain* ~ main_domain ~ ("." ~ tld)+ }
+
+subdomain = _{ !("." ~ tld) ~ (!("." ~ tld) ~ ANY)+ ~ "." }
+
+main_domain = _{ (!("." ~ tld) ~ ANY)+ }
+
+tld = _{ "com" | "org" | "net" | "edu" | "gov" | "io" | "co" | "uk" | "us" } // add more as needed
+
+path = _{ ("/" ~ (!WHITE_SPACE ~ ANY)*)* }
+
 contraction = _{
     ("'" ~
         ("t" | "n" | "cause" | "cept" | "ve" | "ye" | "en" | "er" | "em" | "s" | "gainst" | "d" | "ll" | "re" | "nt" | "m" | "o" | "am" | "neath" | "round" | "thout" | "til" | "tis" | "twas" | "tween" | "twere" | "all" | "ren" | "at" | "know" ) // suffixes
@@ -91,6 +107,7 @@ internal_sentence = _{
     ((number ~ WHITE_SPACE* ~ "." ~ WHITE_SPACE* ~ number) ~ !(WHITE_SPACE* ~ (UPPERCASE_LETTER | TITLECASE_LETTER)) ~ internal_sentence) |
     (quote_wrapper ~ (&possible_sentence_start | internal_sentence | &EOI)) |
     ((ignoreable | (WHITE_SPACE+ ~ abbreviation+) | (!SENTENCE_TERMINAL ~ ANY ) | (SENTENCE_TERMINAL ~ !possible_sentence_start)) ~ internal_sentence) |
+    (url ~ internal_sentence) | // Add this line to handle URLs
     (complete_ending) |
     (!WHITE_SPACE ~ ANY)+
 }
