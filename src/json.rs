@@ -45,33 +45,18 @@ struct Passage {
     //relations: Vec<Relation>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Sentence {
-    text: String
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Annotation {
-    par_type: String
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Relation {
-    par_type: String
-}
-
 /*
     Output JSON.
 */
 #[derive(Deserialize, Serialize, Debug)]
 pub struct OutputParagraph {
-    pub par_type: String,
+    pub r#type: String,
     pub text: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct OutputArticle {
-    pub paragraphs: Vec<OutputParagraph>,
+    pub sentences: Vec<OutputParagraph>,
     pub abbreviations: HashMap<String, String>,
     pub year: String,
     pub pmid: String,
@@ -108,7 +93,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
 
     // Test output JSON
     let mut od = OutputArticle { // OutputDocument?
-        paragraphs: vec![],
+        sentences: vec![],
         abbreviations: HashMap::new(),
         year: "UNK".to_string(),
         pmid: "UNK".to_string(),
@@ -184,19 +169,19 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                     if args.sentences == false {
                         // Create a JSON paragraph.
                         let op = OutputParagraph {
-                            par_type: section_type.to_string(),
+                            r#type: section_type.to_string(),
                             text: passage.text.clone()
                         };
                         //let js = serde_json::to_value(&op).unwrap();
                         //dbg!("{}", js);
-                        od.paragraphs.push(op);
+                        od.sentences.push(op);
                     } else {
                         for s in cutters::cut(&passage.text, cutters::Language::English) {
                             let op = OutputParagraph {
-                                par_type: section_type.to_string(),
+                                r#type: section_type.to_string(),
                                 text: s.str.to_string()
                             };
-                            od.paragraphs.push(op);
+                            od.sentences.push(op);
                         }
                     }
                 }

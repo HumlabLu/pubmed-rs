@@ -209,14 +209,14 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 fn output(filename: &str, texts: &OutputArticle) {
     let args = Args::parse();
     
-    let paragraphs = &texts.paragraphs;
+    let paragraphs = &texts.sentences;
 
     for par in paragraphs {
         if args.filenames == true {
             print!("{}\t", filename);
         }
         if args.sectionnames == true {
-            let par_type = &par.par_type;
+            let par_type = &par.r#type;
             print!("{}\t", par_type);
         }
         let par_text = &par.text;
