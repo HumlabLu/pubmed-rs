@@ -10,7 +10,6 @@ use rayon::prelude::*;
 
 mod json;
 use json::{extract_json_from_json, output_json, OutputArticle, OutputChunk};
-use serde_json::Value;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
@@ -128,11 +127,9 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
         let file_counter = Arc::new(AtomicUsize::new(0));
 
         // Mutex needed.
-        /*
-        let mut oc = OutputChunk { 
+        let oc = Mutex::new(OutputChunk { 
             articles: HashMap::new()
-        };
-        */
+        });
 
         match dirfiles {
             Ok(files) => {
@@ -146,17 +143,15 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                                 let mut abbr = abbreviations.lock().unwrap();
                                 add_abbreviations(&mut abbr, texts);
                             } else {
-                                // We need to get an OutputArticle back, not a String...
-                                /*
-                                let pmid = texts.pmid;
-                                let v = texts;
-                                oc.articles.entry(pmid).or_insert_with(String::new).pmid.push_str(&v);
-                                */
-                                if args.json {
+                                let pmid = texts.pmid.clone();
+                                let mut oc1 = oc.lock().unwrap();
+                                oc1.articles.insert(pmid, texts);
+                                
+                                /*if args.json {
                                     output_json(filename, texts);
                                 } else {
                                     output(filename, texts);
-                                }
+                                }*/
                             }
                             debug!("Output {} ok.", filename);
                             info!("Processed {} {}", filename, file_counter.load(Ordering::SeqCst));
@@ -169,8 +164,10 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                 });
             }
             Err(e) => error!("Failed to read directory: {}", e)
-        }
+        } // match dirfiles
         info!("Total files processed: {}", file_counter.load(Ordering::SeqCst));
+        // output, or create chunks?
+        
     }
 
     // We supplied a single filename.

@@ -1,10 +1,8 @@
 use std::fs;
-use serde_json::Value;
 use serde::{Deserialize, Serialize};
 
 use std::path::Path;
 
-use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 
@@ -13,7 +11,7 @@ use regex::Regex;
 use crate::Args;
 use clap::Parser;
 
-use anyhow::{Context, Result};
+use anyhow::{Result};
 use crate::error;
 
 // ===========================================================================
@@ -45,7 +43,6 @@ struct Passage {
     //annotations: Vec<Annotation>,
     //relations: Vec<Relation>,
 }
-
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Sentence {
