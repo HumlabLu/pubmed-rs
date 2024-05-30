@@ -209,28 +209,27 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 // ================================================================
 
 // Print section-type and text, with optinal filenames/section-types.
-fn output(filename: &str, texts: Value) {
+fn output(filename: &str, texts: OutputArticle) {
     let args = Args::parse();
     
-    let paragraphs = texts["paragraphs"].as_array().expect("ERROR in machine generated JSON");
+    let paragraphs = texts.paragraphs;
 
     for par in paragraphs {
         if args.filenames == true {
             print!("{}\t", filename);
         }
         if args.sectionnames == true {
-            let par_type = &par["par_type"].as_str().expect("ERROR in machine generated JSON");
+            let par_type = &par.par_type;
             print!("{}\t", par_type);
         }
-        let par_text = &par["text"].as_str().expect("ERROR in machine generated JSON");
+        let par_text = &par.text;
         println!("{}", par_text); 
     }    
 }
 
 // Convert the Value to an OutputArticle, and add the abbreviations
 // to the BTreeMap.
-fn add_abbreviations(abbreviations: &mut BTreeMap<String, String>, texts: Value) {
-    let article: OutputArticle = serde_json::from_value(texts.clone()).unwrap();
+fn add_abbreviations(abbreviations: &mut BTreeMap<String, String>, article: OutputArticle) {
     let new_abbreviations = article.abbreviations;
     for (k, v) in new_abbreviations.into_iter() {
         abbreviations.entry(k.clone()).or_insert_with(String::new).push_str(&v);

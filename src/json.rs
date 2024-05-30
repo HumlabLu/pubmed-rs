@@ -67,8 +67,8 @@ struct Relation {
 */
 #[derive(Deserialize, Serialize, Debug)]
 pub struct OutputParagraph {
-    par_type: String,
-    text: String,
+    pub par_type: String,
+    pub text: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -89,7 +89,7 @@ pub struct OutputChunk {
 // The extra filename is for printing error info. Our signature doesn't
 // allow printing of "Path", and the directory version sends Paths
 // this way. This should be fixed!
-pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allowed: &BTreeSet<String>) -> Result<Value> {
+pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allowed: &BTreeSet<String>) -> Result<OutputArticle> {
     let data = fs::read_to_string(file_path)?;
     
     //let json: Value = serde_json::from_str(&data)?;
@@ -206,11 +206,10 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
     let _remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
     //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
 
-    let js = serde_json::to_value(&od).unwrap();
-    Ok(js) // od?
+    Ok(od)
 }
 
-pub fn output_json(_filename: &str, texts: Value) {
+pub fn output_json(_filename: &str, texts: OutputArticle) {
     println!("{}", serde_json::to_string_pretty(&texts).unwrap());
 }
 
