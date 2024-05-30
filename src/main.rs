@@ -163,7 +163,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
         // output, and/or create chunks?
         let oc1: &OutputChunk = &*oc.lock().unwrap();
         if args.json {
-            println!("{}", serde_json::to_string_pretty(oc1).unwrap());
+            output_json(oc1);
         } else {
             for (pmid, article) in &oc1.articles {
                 output(pmid, article);
@@ -185,7 +185,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
                     //output_abbreviations(&path_name, texts);
                 } else {
                     if args.json {
-                        output_json(&path_name, &texts);
+                        output_json(&texts);
                     } else {
                         output(&path_name, &texts);
                     }

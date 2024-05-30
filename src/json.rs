@@ -91,7 +91,7 @@ pub trait OutputData: Serialize {
 impl OutputData for OutputArticle {}
 impl OutputData for OutputChunk {}
 
-pub fn output_json<T: OutputData>(_filename: &str, data: &T) {
+pub fn output_json<T: OutputData>(data: &T) {
     println!("{}", data.to_json());
 }
 
