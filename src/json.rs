@@ -5,6 +5,7 @@ use std::path::Path;
 
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use regex::Regex;
 
@@ -80,7 +81,7 @@ pub struct OutputArticle {
 // Output OutputArticle and OutputChunk with the same function.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct OutputChunk {
-    pub articles: HashMap<String, OutputArticle>,
+    pub articles: BTreeMap<String, OutputArticle>,
 }
 
 pub trait OutputData: Serialize {

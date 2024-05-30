@@ -92,7 +92,6 @@ fn get_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>> {
                             break;
                         }
                     }
-
                 }
             }
         }
@@ -128,7 +127,7 @@ fn main() -> Result<()> { //, Box<dyn std::error::Error>> {
 
         // Mutex needed.
         let oc = Mutex::new(OutputChunk { 
-            articles: HashMap::new()
+            articles: BTreeMap::new()
         });
 
         match dirfiles {
