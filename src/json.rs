@@ -18,69 +18,6 @@ use crate::error;
 
 // ===========================================================================
 
-pub fn _extract_text_from_json<P: AsRef<Path>>(file_path: P) -> Result<BTreeMap<String, String>> {
-    let data = fs::read_to_string(file_path)?;
-    let json: Value = serde_json::from_str(&data)?;
-
-    //dbg!("{:?}", &json);
-
-    // body_text is the COVID-19 data, the newer ones have passages/text etc.
-    let body_text = json["body_text"].as_array().context("Invalid format for 'body_text'")?;
-    
-    let mut fulltext = BTreeMap::new(); // This one is sorted.
-    let mut current_section = String::from("UNKNOWN");
-    let mut section_number = 0usize;
-
-    let remove_simpleref = Regex::new(r"\n\d{1,2}").unwrap();
-    let remove_latex = Regex::new(r"(?s)\\documentclass.*?\\end\{document\}").unwrap(); // (?s) = multi-line
-    let remove_figs = Regex::new(r"\(Fig(?:ure|\.)? \d+[a-z]?\)").unwrap();
-    //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+[a-z]?(?:,\s*[a-z])?\)").unwrap();
-    //let remove_figs1 = Regex::new(r"\(Fig\.?\s*ure?\s+\d+(?:[a-z](?:,\s*[a-z])?)?\)").unwrap();
-    ////let remove_parens = Regex::new(r"\([^)]*\)").unwrap(); // Takes too much...
-    let remove_parens = Regex::new(r"\([^)]{1,10}\)").unwrap();
-    let remove_square = Regex::new(r"\[\s*\d+\s*(,\s*\d+\s*)*\]").unwrap();
-    //Regex::new(r"\[\d+(,\d+)*\]").unwrap(); //Regex::new(r"\[\d+\]").unwrap();
-    
-    let _args = Args::parse();
-
-    let mut sep = "";
-    for entry in body_text {
-        if let Some(text) = entry["section"].as_str() {
-            let clean_text = String::from(text);
-            // A new section (assuming they are in order)?
-            // Prepend a number so they can be sorted later.
-            if current_section != format!("{:02}:{}", section_number, clean_text.clone()) { 
-                section_number += 1;
-                sep = "";
-                current_section = format!("{:02}:{}", section_number, clean_text.clone());
-            }
-        }
-        // store as datat[section] += clean_text or something.
-        if let Some(text) = entry["text"].as_str() {
-            let mut clean_text = String::from(text);
-
-            clean_text = remove_latex.replace_all(&clean_text, "").into_owned(); // always
-            if true { // true was args.remove
-                // Quick fix for "\n1" type of refs.
-                clean_text = remove_simpleref.replace_all(&clean_text, "").into_owned();
-                clean_text = remove_figs.replace_all(&clean_text, "").into_owned();
-                //let clean_text = remove_figs1.replace_all(&clean_text, "");
-                clean_text = remove_parens.replace_all(&clean_text, "").into_owned();
-                clean_text = remove_square.replace_all(&clean_text, "").into_owned();
-            }
-            clean_text = sep.to_owned() + &clean_text;
-            sep = " ";
-
-            fulltext.entry(current_section.clone()).or_insert_with(String::new).push_str(&clean_text);
-        }
-    }
-    
-    Ok(fulltext)
-}
-
-// -------------------------------------------------------------------
-
-
 #[derive(Debug, Deserialize, Serialize)]
 struct Root {
     source: String,
@@ -112,24 +49,16 @@ struct Passage {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Sentence {
-    // Define fields based on the structure of sentences in your JSON
-    // For example, if sentences contain only text:
     text: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Annotation {
-    // Define fields based on the structure of annotations in your JSON
-    // For example, if annotations contain an id and type:
-    // id: String,
     par_type: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Relation {
-    // Define fields based on the structure of relations in your JSON
-    // For example, if relations contain an id and type:
-    // id: String,
     par_type: String
 }
 
@@ -239,13 +168,11 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                     }
                     continue;
                 }
-                //println!("{:?}", passage.infons);
+
                 if par_type == "paragraph" || par_type == "abstract" {
-                    //println!("{} {}\n", section_type, passage.text);
 
                     if args.sentences == false {
                         // Create a JSON paragraph.
-                        // TODO: Split here, and just create smaller paragraphs!
                         let op = OutputParagraph {
                             par_type: section_type.to_string(),
                             text: passage.text.clone()
@@ -263,7 +190,7 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
                         }
                     }
                 }
-            } else { // has section_type
+            } else { // has no section_type
                 error!("{}: passage has no section_type.", filename);
             }
         } // passages
@@ -281,18 +208,6 @@ pub fn extract_json_from_json<P: AsRef<Path>>(file_path: P, filename: &str, allo
 
     let js = serde_json::to_value(&od).unwrap();
     Ok(js) // od?
-}
-
-// ----------------------------------------------------------------------------
-
-
-// Remove the "NN:" prefix from the String.
-pub fn _remove_section_no(section: &String) -> String {
-    if section.len() > 3 {
-        section.chars().skip(3).collect()
-    } else {
-        String::new()
-    }
 }
 
 pub fn output_json(_filename: &str, texts: Value) {
