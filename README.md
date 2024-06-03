@@ -34,7 +34,7 @@ These are the counts in about 75000 articles.
 |  994629       | `METHODS` |  |
 | 3035484       | `REF` | :x: |
 
-Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list. If the `--allowed` parameter has been specified, only those types will be added to the output. In that case the ignore list is disabled.
+Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list. If the `--allowed` parameter has been specified, only those types will be added to the output. In that case the ignore list is disabled. The section types specified with `--allowed` should be spearated by spaces. 
 
 A typical PubMed text contains paragraphs that look like this.
 ```json
