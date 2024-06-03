@@ -54,7 +54,7 @@ struct Args {
     #[arg(short = 'S', long, action)]
     sentences: bool,
 
-    /// Remove some stuff with hard-coded regular expressions.
+    // Remove some stuff with hard-coded regular expressions.
     /*
     #[arg(short, long, action)]
     remove: bool,
@@ -64,7 +64,7 @@ struct Args {
     #[arg(short, long, action)]
     abbreviations: bool,
 
-    /// Allowed sections
+    /// Allowed sections, separated by spaces
     #[clap(short = 'A', long, value_delimiter = ' ', num_args = 1..)]
     pub allowed: Vec<String>,
 }
