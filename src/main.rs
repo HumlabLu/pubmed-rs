@@ -64,6 +64,7 @@ struct Args {
     #[arg(short, long, action)]
     abbreviations: bool,
 
+    /// Allowed sections
     #[clap(short = 'A', long, value_delimiter = ' ', num_args = 1..)]
     pub allowed: Vec<String>,
 }

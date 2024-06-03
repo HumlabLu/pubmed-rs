@@ -14,7 +14,7 @@ These are the counts in about 75000 articles.
 
 | Count  | Section Type | :x: Ignored |
 | ------------: | ------------- | ---| 
-|    2851       | `KEYWORD` |  | 
+|    2851       | `KEYWORD` | :x: | 
 |    4916       | `REVIEW_INFO` | :x: |
 |   18038       | `APPENDIX` | :x: |
 |   19429       | `CASE` | :x: |
@@ -36,7 +36,7 @@ These are the counts in about 75000 articles.
 
 Text from the sections is included if their type is `paragraph` and the `section_type` is not on the ignore list. If the `--allowed` parameter has been specified, only those types will be added to the output. In that case the ignore list is disbaled.
 
-A typical text to be included looks like this.
+A typical PubMed text looks like this.
 ```json
 {
       "offset": 1879,
@@ -57,16 +57,17 @@ A typical text to be included looks like this.
 Usage: pubmed-rs [OPTIONS]
 
 Options:
-  -f, --filename <FILENAME>  Filename of the JSON file to parse
-  -d, --dirname <DIRNAME>    Directory name
-  -j, --json                 Output JSON instead of plain text
-  -m, --maxfiles <MAXFILES>  If specified, maximum number of files to process from directory
-  -s, --sectionnames         Include the section names in the output
-      --filenames            Include the file names in the output
-  -a, --abbreviations        Output only abbreviations
-      --allowed <ALLOWED>...
-  -h, --help                 Print help
-  -V, --version              Print version
+  -f, --filename <FILENAME>   Filename of the JSON file to parse
+  -d, --dirname <DIRNAME>     Directory name
+  -j, --json                  Output JSON instead of plain text
+  -m, --maxfiles <MAXFILES>   If specified, maximum number of files to process from directory
+  -s, --sectionnames          Include the section names in the output
+  -F, --filenames             Include the file names in the output
+  -S, --sentences             Sentence splitter
+  -a, --abbreviations         Remove some stuff with hard-coded regular expressions. Output only abbreviations
+  -A, --allowed <ALLOWED>...  Allowed sections
+  -h, --help                  Print help
+  -V, --version               Print version
 ```
 
 ## Examples
@@ -114,23 +115,22 @@ ROS	Reactive oxygen species
 The JSON output contains all the available information.
 ```json
 {
-  "abbreviations": {
-    "ROS": "Reactive oxygen species"
-  },
-  "paragraphs": [
+  "sentences": [
     {
-      "par_type": "ABSTRACT",
+      "type": "ABSTRACT",
       "text": "Tendon injuries have a high incidence and limited treatment options. Stem cell transplantation isessential for several medical conditions like tendon injuries. However, high local concentrations of reactive oxygenspecies (ROS) inhibit the activity of transplanted stem cells and hinder tendon repair. Cerium oxide nanoparticles (CeONPs) have emerged as antioxidant agents with reproducible reducibility."
     },
     {
-      "par_type": "ABSTRACT",
-      "text": "However, high local concentrations of reactive oxygenspecies (ROS) inhibit the activity of transplanted stem cells and hinder tendon repair. Cerium oxide nanoparticles (CeONPs) have emerged as antioxidant agents with reproducible reducibility."
-    },
-    {
-      "par_type": "RESULTS",
-      "text": "The hydrophobic CeONPs were synthesized by a previously reported thermal decomposition method. After coating with mPEG2k-DSPE, CeONPs were transferred to the aqueous phase. As shown in Fig. 2A, the obtained PEG-CeONPs exhibited uniform morphologies with sizes of 5.45 ± 1.08 nm. Moreover, CeONPs were stable in an aqueous solution for at least 2 weeks, as evidenced by their appearance and the results of the UV-visible spectra analysis (Fig. 2E, F)."
+      "type": "ABSTRACT",
+      "text": "However, high local concentrations of reactive oxygenspecies (ROS) inhibit the activity of transplanted stem cells and hinder tendon repair. Cerium oxide nanoparticles (CeONPs) have emerged as antioxidant agents with reproducible reducibility. See https://durian.org/foo."
     }
-  ]
+  ],
+  "abbreviations": {
+    "ROS": "Reactive oxygen species"
+  },
+  "year": "2023",
+  "pmid": "10546722",
+  "title": "Cerium oxide nanoparticles-carrying human umbilical cord mesenchymal stem cells counteract oxidative damage and facilitate tendon regeneration"
 }
 ```
 
